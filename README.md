@@ -1,1 +1,1 @@
- # StuVendor
+ # StuVendor Web Application
