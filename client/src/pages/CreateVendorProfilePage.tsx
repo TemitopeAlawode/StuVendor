@@ -29,10 +29,10 @@ const CreateVendorProfilePage = () => {
     const [description, setDescription] = useState("");
     const [profilePicture, setProfilePicture] = useState<File | null>(null);
 
-    const [bankName, setBankName] = useState("");
+    const [bankCode, setBankCode] = useState('');
     const [bankAccountNumber, setBankAccountNumber] = useState("");
     const [bankAccountName, setBankAccountName] = useState("");
-    const [bankCode, setBankCode] = useState('');
+    
 
     // Define state for banks
     const [banks, setBanks] = useState<Bank[]>([]);
@@ -152,7 +152,7 @@ const CreateVendorProfilePage = () => {
         formData.append("address", address);
         formData.append("phoneNumber", phoneNumber);
         formData.append("description", description);
-        formData.append("bankName", bankName);
+        formData.append("bankCode", bankCode);
         formData.append("bankAccountNumber", bankAccountNumber);
         formData.append("bankAccountName", bankAccountName);
         if (profilePicture) {
@@ -295,22 +295,22 @@ const CreateVendorProfilePage = () => {
                             />
                         </div>
 
-                        {/* Bank Name Input */}
+                        {/* Bank Selection Input */}
                         <div className="my-4">
-                            <label htmlFor="bankName" className="text-gray-700 font-medium">Bank Name</label>
+                            <label htmlFor="bankCode" className="text-gray-700 font-medium">Bank</label>
                             <select
-                                id="bankName"
+                                id="bankCode"
                                 // value={bankName}
                                 value={bankCode}
-                                // onChange={(e) => setBankName(e.target.value)}
+                                onChange={(e) => setBankCode(e.target.value)}
                                 // Getting the bank code through the bankname
                                 // It searches through the banks array to find one bank
                                 //  where the code matches the value selected from a form input 
-                                onChange={(e) => {
-                                    const selectedBank = banks.find((bank) => bank.code === e.target.value);
-                                    setBankCode(e.target.value);
-                                    setBankName(selectedBank?.name || '');
-                                }}
+                                // onChange={(e) => {
+                                //     const selectedBank = banks.find((bank) => bank.code === e.target.value);
+                                //     setBankCode(e.target.value);
+                                //     setBankName(selectedBank?.name || '');
+                                // }}
                                 className="w-full border border-gray-400 px-4 py-2 rounded-lg focus:outline-none"
                                 required
                             >
@@ -318,6 +318,7 @@ const CreateVendorProfilePage = () => {
                                 {/* Populate with the bank list */}
                                 {banks.map((bank) => (
                                     <option key={bank.id} value={bank.code}>{bank.name}</option>
+                                    // <option key={bank.id} value={bank.code}>{bank.name} ({bank.code})</option>
                                 ))}
                             </select>
                         </div>

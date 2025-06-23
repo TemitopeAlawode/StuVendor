@@ -19,7 +19,7 @@ interface CustomVendor {
     phoneNumber?: string
     description?: string
     profilePicture: string;
-    bankName: string
+    bankCode: string
     bankAccountNumber: string
     bankAccountName: string
 }
@@ -46,12 +46,12 @@ export const createVendorHandler = async (req: Request, res: Response) => {
         // }
 
         // Confirming the properties that's been inputted
-        const { businessName, address, phoneNumber, description, bankName, bankAccountNumber, bankAccountName }: CustomVendor = req.body;
+        const { businessName, address, phoneNumber, description, bankCode, bankAccountNumber, bankAccountName }: CustomVendor = req.body;
 
         // Vendor's profile picture
         const profilePicture = req.file ? `/uploads/${req.file.filename}` : '';
 
-        if (!businessName || !address || !phoneNumber || !bankName || !bankAccountNumber || !bankAccountName || !profilePicture) {
+        if (!businessName || !address || !phoneNumber || !bankCode || !bankAccountNumber || !bankAccountName || !profilePicture) {
         res.status(400).json({ message: 'All required fields must be provided.' });
         return;
        }
@@ -96,7 +96,7 @@ export const createVendorHandler = async (req: Request, res: Response) => {
             phoneNumber,
             description,
             profilePicture,
-            bankName, 
+            bankCode, 
             bankAccountNumber, 
             bankAccountName
         });
@@ -118,7 +118,7 @@ export const createVendorHandler = async (req: Request, res: Response) => {
 // ================================================
 export const updateVendorHandler = async (req: Request, res: Response) => {
     try {
-        const { businessName, address, phoneNumber, description, bankName, bankAccountNumber, bankAccountName }: CustomVendor = req.body;
+        const { businessName, address, phoneNumber, description, bankCode, bankAccountNumber, bankAccountName }: CustomVendor = req.body;
 
         const profilePicture = req.file ? `/uploads/${req.file.filename}` : undefined;
 
@@ -174,7 +174,7 @@ export const updateVendorHandler = async (req: Request, res: Response) => {
             phoneNumber: phoneNumber || vendor.phoneNumber,
             description: description || vendor.description,
             profilePicture: profilePicture || vendor.profilePicture,
-            bankName: bankName || vendor.bankName,
+            bankCode: bankCode || vendor.bankCode,
             bankAccountNumber: bankAccountNumber || vendor.bankAccountNumber,
             bankAccountName: bankAccountName || vendor.bankAccountName,
         });

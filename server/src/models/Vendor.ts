@@ -13,7 +13,7 @@ interface VendorAttributes {
   bankDetails?: string;
   UserId: string;
   profilePicture: string;
-  bankName: string
+  bankCode: string
   bankAccountNumber: string
   bankAccountName: string
 }
@@ -70,12 +70,9 @@ const Vendor = sequelize.define<VendorInstance>(
     //   allowNull: true,
     // },
 
-    bankName: {
+    bankCode: {
     type: DataTypes.STRING,
     allowNull: false,
-    validate: {
-      notEmpty: { msg: "Bank name is required." },
-    },
   },
   bankAccountNumber: {
     type: DataTypes.STRING(10),

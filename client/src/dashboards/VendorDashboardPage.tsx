@@ -24,7 +24,7 @@ interface Vendor {
   phoneNumber?: string;
   description?: string;
   profilePicture?: string;
-  bankName: string
+  bankCode: string
   bankAccountNumber: string
   bankAccountName: string
 }
@@ -52,10 +52,10 @@ const VendorDashboardPage = () => {
   const [editedProfilePicture, setEditedProfilePicture] = useState<File | null>(null);
   const [profilePicturePreview, setProfilePicturePreview] = useState<string | null>(null); // For previewing the selected image
 
-  const [editedBankName, setEditedBankName] = useState('');
+  const [editedBankCode, setEditedBankCode] = useState('');
   const [editedBankAccountNumber, setEditedBankAccountNumber] = useState('');
   const [editedBankAccountName, setEditedBankAccountName] = useState('');
-  const [editedBankCode, setEditedBankCode] = useState('');
+
 
   // Define state for banks
   const [banks, setBanks] = useState<Bank[]>([]);
@@ -99,10 +99,9 @@ const VendorDashboardPage = () => {
         setEditedAddress(response.data.address || "");
         setEditedPhoneNumber(response.data.phoneNumber || "");
         setEditedDescription(response.data.description || "");
-        setEditedBankName(response.data.bankName || "");
+        setEditedBankCode(response.data.bankCode || "");
         setEditedBankAccountNumber(response.data.bankAccountNumber || "");
         setEditedBankAccountName(response.data.bankAccountName || "");
-        setEditedBankCode(''); // Set after fetching banks
         // Set initial preview to the existing profile picture
         setProfilePicturePreview(response.data.profilePicture ? `${API_BASE_URL}${response.data.profilePicture}` : null);
 
@@ -157,7 +156,9 @@ const VendorDashboardPage = () => {
     setVerifying(true);
     const result = await verifyBankAccount(editedBankAccountNumber, editedBankCode);
     if (result) {
-      setEditedBankAccountName(result.bankAccountName);
+      setEditedBankAccountName(result);
+      console.log(result);
+      
       setIsVerified(true);
     }
     else {
@@ -178,6 +179,7 @@ const VendorDashboardPage = () => {
       });
       return;
     }
+    
 
     try {
       const formData = new FormData();
@@ -185,7 +187,7 @@ const VendorDashboardPage = () => {
       formData.append("address", editedAddress);
       formData.append("phoneNumber", editedPhoneNumber);
       formData.append("description", editedDescription);
-      formData.append("bankName", editedBankName);
+      formData.append("bankCode", editedBankCode);
       formData.append("bankAccountNumber", editedBankAccountNumber);
       formData.append("bankAccountName", editedBankAccountName);
       if (editedProfilePicture) {
@@ -285,7 +287,8 @@ const VendorDashboardPage = () => {
                 <p><strong>Address: </strong> {vendor?.address || "Not provided"}</p>
                 <p><strong>Phone Number: </strong> {vendor?.phoneNumber || "Not provided"}</p>
                 <p><strong>Description: </strong> {vendor?.description || "Not provided"}</p>
-                <p><strong>Bank Name: </strong> {vendor?.bankName || "Not provided"}</p>
+                {/* <p><strong>Bank Name: </strong> {vendor?.bankName || "Not provided"}</p> */}
+                <p><strong>Bank Name: </strong>{banks.find((bank) => bank.code === vendor?.bankCode)?.name || "Not provided"}</p>
                 <p><strong>Bank Account Number: </strong> {vendor?.bankAccountNumber || "Not provided"}</p>
                 <p><strong>Bank Account Name: </strong> {vendor?.bankAccountName || "Not provided"}</p>
                 <button
@@ -363,29 +366,30 @@ const VendorDashboardPage = () => {
                   />
                 </div>
 
-                {/* Bank Name Input */}
+                {/* Bank Selection Input */}
                 <div className="my-4">
-                  <label htmlFor="bankName" className="text-gray-700 font-medium">Bank Name</label>
+                  <label htmlFor="bankCode" className="text-gray-700 font-medium">Bank</label>
                   <select
-                    id="bankName"
+                    id="bankCode"
                     // value={bankName}
-                    //  value={editedBankCode}
-                    // onChange={(e) => setBankName(e.target.value)}
+                     value={editedBankCode}
+                    onChange={(e) => setEditedBankCode(e.target.value)}
                     // Getting the bank code through the bankname
                     // It searches through the banks array to find one bank
                     //  where the code matches the value selected from a form input 
-                    onChange={(e) => {
-                      const selectedBank = banks.find((bank) => bank.code === e.target.value);
-                      setEditedBankCode(e.target.value);
-                      setEditedBankName(selectedBank?.name || '');
-                    }}
+                    // onChange={(e) => {
+                    //   const selectedBank = banks.find((bank) => bank.code === e.target.value);
+                    //   setEditedBankCode(e.target.value);
+                    //   setEditedBankName(selectedBank?.name || '');
+                    // }}
                     className="w-full border border-gray-400 px-4 py-2 rounded-lg focus:outline-none"
                     required
                   >
                     <option value="">Select a bank</option>
                     {/* Populate with the bank list */}
                     {banks.map((bank) => (
-                      <option key={bank.id} value={bank.code} selected={bank.name === editedBankName}>{bank.name}</option>
+                      <option key={bank.id} value={bank.code}>{bank.name}</option>
+                      // <option key={bank.id} value={bank.code} selected={bank.name === editedBankCode}>{bank.name}</option>
                     ))}
                   </select>
                 </div>
@@ -432,7 +436,7 @@ const VendorDashboardPage = () => {
                     onChange={(e) => setEditedBankAccountName(e.target.value)}
                     className="w-full border border-gray-400 px-4 py-2 rounded-lg focus:outline-none"
                     placeholder="Verified account name will appear here"
-                    // readOnly
+                    readOnly
                     required
                   />
                   {isVerified && <p className='text-green-600 text-sm mt-1'>Account verified!</p>}
