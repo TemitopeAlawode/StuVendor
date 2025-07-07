@@ -272,13 +272,13 @@ const VendorDashboardPage = () => {
             <h2 className="text-xl font-semibold mb-2">Your Vendor Profile</h2>
 
             {!showEditForm ? (
-              <div>
+              <div className="space-y-2 text-sm sm:text-base">
 
                 <div className="flex items-center justify-center">
                   <img
                     src={`${API_BASE_URL}${vendor?.profilePicture}`}
                     alt={vendor?.businessName}
-                    className="rounded-full h-20 w-20 mb-2 object-cover border-2 border-blue-950"
+                    className="rounded-full h-20 w-20 sm:h-20 sm:w-20 mb-2 object-cover border-2 border-blue-950"
                   />
                 </div>
 
@@ -299,7 +299,7 @@ const VendorDashboardPage = () => {
                 </button>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-4 text-sm sm:text-base">
                 {/* Vendor's profile Picture */}
                 <div>
                   <label className="block text-gray-700 font-medium">Profile Picture</label>
@@ -308,7 +308,7 @@ const VendorDashboardPage = () => {
                     <img
                       src={profilePicturePreview}
                       alt="Profile Preview"
-                      className="rounded h-16 w-16 mb-3"
+                      className="rounded h-16 w-16 sm:h-20 sm:w-20 mb-3 object-cover"
                     />
                   ) : (
                     <p className="text-gray-600 mb-2">No profile picture selected</p>
@@ -353,6 +353,7 @@ const VendorDashboardPage = () => {
                     value={editedPhoneNumber}
                     onChange={(e) => setEditedPhoneNumber(e.target.value)}
                     className="w-full border border-gray-400 px-4 py-2 rounded-lg focus:outline-none"
+                    maxLength={11}
                   />
                 </div>
 
@@ -411,6 +412,7 @@ const VendorDashboardPage = () => {
                         }}
                       className="w-full border border-gray-400 px-4 py-2 rounded-l-lg focus:outline-none"
                       placeholder="Enter your account number e.g. 1234567890"
+                      maxLength={10}
                       required
                     />
                     <button
@@ -443,7 +445,7 @@ const VendorDashboardPage = () => {
                 </div>
 
                 {/* 'Save Changes' and 'Cancel' button */}
-                <div className="space-x-4">
+                <div className="flex flex-col sm:flex-row gap-2">
 
                   {/* Save Changes button*/}
                   <button
@@ -455,7 +457,8 @@ const VendorDashboardPage = () => {
                   {/* Cancel button */}
                   <button
                     onClick={() => setShowEditForm(false)}
-                    className="bg-red-600 text-white hover:bg-red-500 cursor-pointer px-4 py-2 rounded">
+                    className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors cursor-pointer"
+                    >
                     Cancel
                   </button>
                 </div>
@@ -495,7 +498,7 @@ const VendorDashboardPage = () => {
             </p>
 
             <button
-              // onClick={}
+              onClick={() => navigate('/vendor/orders')}
               className="bg-blue-950 text-white px-4 py-2 rounded mt-4 cursor-pointer hover:bg-blue-900">
               View Orders
             </button>

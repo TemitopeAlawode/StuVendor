@@ -76,8 +76,12 @@ const ProductListingPage = () => {
   // State to track IDs of products liked by the user
   const [likedProducts, setLikedProducts] = useState<string[]>([]);
 
-   // Use context for updating count
-    const { updateCounts } = useCount(); 
+  // Use context for updating count
+  const { updateCounts } = useCount();
+
+  // State for current page
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   const navigate = useNavigate();
   // Decoding the search input
@@ -87,9 +91,10 @@ const ProductListingPage = () => {
   const searchQuery = searchParams.get("search") || "";
   const categoryFromUrl = searchParams.get("category") || ""; // Read category from URL
 
-   useEffect(() => {
+  useEffect(() => {
     if (categoryFromUrl) {
       setSelectedCategory(categoryFromUrl);
+      setCurrentPage(1);  // Reset to page 1 when category changes
     }
   }, [categoryFromUrl]);
 
@@ -133,6 +138,7 @@ const ProductListingPage = () => {
       setLoading(true);
       // Clear any previous errors
       setError(null);
+      setCurrentPage(1); // Reset to page 1 on new fetch
 
       try {
         // Fetch categories (needed for the filter by category dropdown)
@@ -159,7 +165,7 @@ const ProductListingPage = () => {
             searchParams: {
               query: searchQuery,
               typoTolerance: false,
-               hitsPerPage: 20
+              hitsPerPage: 20
             },
           });
           setProducts(hits as ProductHit[]); // Update products with search results
@@ -202,11 +208,11 @@ const ProductListingPage = () => {
   const handleCategoryChange = (categoryId: string) => {
     setSelectedCategory(categoryId);
     // Update URL to reflect category selection
-      navigate( categoryId
-        ? `/products?category=${categoryId}` 
-        : "/products"
-        // { replace: true }
-      ); 
+    navigate(categoryId
+      ? `/products?category=${categoryId}`
+      : "/products"
+      // { replace: true }
+    );
   };
 
 
@@ -237,9 +243,9 @@ const ProductListingPage = () => {
         // It keeps only the items that are not equal to productId.
         // This effectively removes the given productId from the list.
         setLikedProducts(likedProducts.filter((id) => id !== productId));
-        
+
         // Refresh counts
-        await updateCounts(); 
+        await updateCounts();
 
         Swal.fire({
           title: "Success",
@@ -256,9 +262,9 @@ const ProductListingPage = () => {
         );
         setLikedProducts([...likedProducts, productId]);
         // setLikedProducts([...likedProducts, response.data.productId]);
-        
+
         // Refresh counts
-        await updateCounts(); 
+        await updateCounts();
 
         Swal.fire({
           title: "Success",
@@ -277,6 +283,29 @@ const ProductListingPage = () => {
       });
     }
   }
+  // ---------------------------------->>
+
+
+
+  // ---------------------------------->>
+  // Pagination logic
+  const totalPages = Math.ceil(products.length / itemsPerPage);  //  Math.ceil rounds a number up to the nearest integer
+  // Calculates the index of the first product to display on the current page
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  // Calculates the index of the last product to display on the current page.
+  const endIndex = startIndex + itemsPerPage;
+  // Extracts a subset of the products array for the current page
+  const currentProducts = products.slice(startIndex, endIndex);
+
+
+  // This function updates the current page and scrolls the viewport to the top for a better user experience.
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scroll({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   // ---------------------------------->>
 
 
@@ -314,26 +343,26 @@ const ProductListingPage = () => {
       <section className="bg-gray-100 min-h-[87vh] p-8">
 
         <div className="flex items-center justify-between mb-10">
-          
-          <div className="flex items-center space-x-4">
-          {/* Button for navigating back to previous page*/}
-          <BackButton />
 
-          {/* Heading */}
-          <h1 className="text-3xl font-bold text-gray-800">
-            {selectedCategoryName
-              ? `Products in '${selectedCategoryName}' category`
-              : searchQuery
-                ? `Search Results for '${searchQuery}' `
-                : "Browse Products"}
-          </h1>
+          <div className="flex items-center space-x-4">
+            {/* Button for navigating back to previous page*/}
+            <BackButton />
+
+            {/* Heading */}
+            <h1 className="text-3xl font-bold text-gray-800">
+              {selectedCategoryName
+                ? `Products in '${selectedCategoryName}' category`
+                : searchQuery
+                  ? `Search Results for '${searchQuery}' `
+                  : "Browse Products"}
+            </h1>
           </div>
 
           <button
             onClick={() => navigate('/recommended-products')}
-              className="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-4 py-2 rounded-lg cursor-pointer hover:from-blue-700 hover:to-blue-900 transition-colors"
-            // className=" border border-blue-600 text-blue-600 font-medium px-4 py-2 rounded cursor-pointer transition-colors hover:bg-gray-200"
-            >
+            className="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-4 py-2 rounded-lg cursor-pointer hover:from-blue-700 hover:to-blue-900 transition-colors"
+          // className=" border border-blue-600 text-blue-600 font-medium px-4 py-2 rounded cursor-pointer transition-colors hover:bg-gray-200"
+          >
             View Recommended Products
           </button>
 
@@ -379,7 +408,8 @@ const ProductListingPage = () => {
         ) : (
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.map((product) => {
+            {/* {products.map((product) => { */}
+            {currentProducts.map((product) => {
               const productId = isProductHit(product) ? product.objectID : product.id;
               // Checks to see the products that has been liked.
               const isLiked = likedProducts.includes(productId);
@@ -394,9 +424,9 @@ const ProductListingPage = () => {
                     to={`/products/${productId}`}
                   >
                     {/* Product Card */}
-                    <div 
-                    className="bg-white rounded-lg shadow-md relative cursor-pointer hover:shadow-gray-500"
-                  // className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow transform hover:-translate-y-1 duration-300"
+                    <div
+                      className="bg-white rounded-lg shadow-md relative cursor-pointer hover:shadow-gray-500"
+                    // className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow transform hover:-translate-y-1 duration-300"
                     >
                       {/* Like/unlike button with heart icon */}
                       <div className="absolute top-1 right-1 bg-gray-200 w-11 h-11 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors group">
@@ -424,22 +454,28 @@ const ProductListingPage = () => {
                         className="rounded-t-md h-48 w-full object-cover mb-4"
                       />
 
-                  <div className="p-4">
-                      {/* Product details */}
-                      <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                        {product.name}
-                      </h3>
-                      <p className="text-gray-600 mb-2"> &#8358;{product.price} </p>
-                      {/* <p className="text-gray-600">Stock: {product.stock} </p> */}
-                      <p className="text-gray-600 text-sm mb-2"> {product.description} </p>
+                      <div className="p-4">
+                        {/* Product details */}
+                        <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                          {product.name}
+                        </h3>
+                        <p className="text-gray-600 mb-2"> &#8358;{product.price} </p>
+                        {/* <p className="text-gray-600">Stock: {product.stock} </p> */}
+                        <p className="text-gray-600 text-sm mb-2"> {product.description} </p>
 
-                       <Link
+                        <button
+                          onClick={() => navigate(`/products/${productId}`)}
+                          className="inline-block text-blue-600 hover:text-blue-800 font-medium cursor-pointer transition-colors"
+                        >
+                          View Details
+                        </button>
+                        {/* <Link
                       to={`/products/${productId}`}
                       className="inline-block text-blue-600 hover:text-blue-800 font-medium transition-colors"
                     >
                       View Details
-                    </Link>
-                    </div>
+                    </Link> */}
+                      </div>
                     </div>
                     {/* End of Product Card */}
                   </Link>
@@ -449,6 +485,57 @@ const ProductListingPage = () => {
           </div>
         )}
         {/* End of Products Grid/List */}
+
+        {/* Handle Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-6 flex justify-center gap-2">
+            {/* Previous btn */}
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className={`px-4 py-2 rounded-lg text-sm sm:text-base ${currentPage === 1
+                  ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                  : "bg-blue-950 text-white hover:bg-blue-900"
+                }`}
+            >
+              Previous
+            </button>
+
+            {/* Page numbers  */}
+
+            {(() => {
+              const pages = [];
+              for (let page = 1; page <= totalPages; page++) {
+                pages.push(
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`px-4 py-2 rounded-lg text-sm sm:text-base ${currentPage === page
+                        ? "bg-blue-950 text-white"
+                        : "bg-gray-300 text-gray-800 hover:bg-gray-400"
+                      }`}
+                  >
+                    {page}
+                  </button>
+                );
+              }
+              return pages;
+            })()}
+
+            {/* Next btn */}
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className={`px-4 py-2 rounded-lg text-sm sm:text-base ${currentPage === totalPages
+                  ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                  : "bg-blue-950 text-white hover:bg-blue-900"
+                }`}
+            >
+              Next
+            </button>
+          </div>
+        )}
+
       </section>
 
       {/* Footer Component */}

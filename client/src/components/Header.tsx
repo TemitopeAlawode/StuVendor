@@ -3,7 +3,7 @@
 import { Link, useNavigate } from "react-router-dom"
 import Swal from "sweetalert2";
 import SearchBar from "./SearchBar";
-import { ArrowRightOnRectangleIcon, HeartIcon, ShoppingCartIcon, UserCircleIcon } from "@heroicons/react/24/outline";
+import { ArrowRightOnRectangleIcon, BellIcon, HeartIcon, ShoppingCartIcon, UserCircleIcon } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
@@ -42,7 +42,7 @@ const Header = () => {
     // State for the userType
     const [userType, setUserType] = useState<'customer' | 'vendor' | 'admin' | null>(null);
 
-    const { cartCount, likedProductsCount, updateCounts } = useCount(); // Use context
+    const { cartCount, likedProductsCount, orderNotificationCount, updateCounts } = useCount(); // Use context
 
     // Check for token and fetch liked products count on component mount (On page load)
     useEffect(() => {
@@ -161,6 +161,16 @@ const Header = () => {
                                 <UserCircleIcon className="h-7 w-7 hover:text-blue-400" />
                             </button>
 
+                            {/* Notification icon */}
+                            <button 
+                            onClick={() => navigate("/vendor/orders")}
+                            className="relative">
+                                <BellIcon className="h-7 w-7 hover:text-blue-400 cursor-pointer" />
+                            <span className="absolute bg-red-500 rounded-full flex justify-center w-5 h-5 items-center -top-2 -right-2 text-xs">
+                                {orderNotificationCount}
+                                </span>
+                            </button>
+
                             {/* Liked Products/Favorites Icon */}
                             <Link
                                 to='/liked-products'
@@ -214,7 +224,7 @@ const Header = () => {
     )
 }
 
-export default Header
+export default Header;
 
 
 
@@ -246,33 +256,17 @@ export default Header
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// /* eslint-disable @typescript-eslint/no-unused-vars */
-// /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // import { Link, useNavigate } from "react-router-dom"
 // import Swal from "sweetalert2";
 // import SearchBar from "./SearchBar";
-// import { ArrowRightOnRectangleIcon, HeartIcon, ShoppingCartIcon, UserCircleIcon } from "@heroicons/react/24/outline";
+// import { ArrowRightOnRectangleIcon, BellIcon, HeartIcon, ShoppingCartIcon, UserCircleIcon } from "@heroicons/react/24/outline";
 // import { useEffect, useState } from "react";
 // import axios from "axios";
 // import { jwtDecode } from "jwt-decode";
+// // Import the context hook
+// import { useCount } from "../contexts/CountContext";
 
 // const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -302,12 +296,11 @@ export default Header
 //     const navigate = useNavigate();
 //     // State to check if user is logged in
 //     const [isLoggedIn, setIsLoggedIn] = useState(false);
-//     // State to store the count of liked products
-//     const [likedProductsCount, setLikedProductsCount] = useState(0);
-//     // State to store the count of cart items
-//     const [cartCount, setCartCount] = useState(0);
+
 //     // State for the userType
 //     const [userType, setUserType] = useState<'customer' | 'vendor' | 'admin' | null>(null);
+
+//     const { cartCount, likedProductsCount, updateCounts } = useCount(); // Use context
 
 //     // Check for token and fetch liked products count on component mount (On page load)
 //     useEffect(() => {
@@ -331,28 +324,11 @@ export default Header
 //                 });
 //                 setUserType(userResponse.data.userType);
 
-//                 // Fetch liked products from the backend
-//                 const likedResponse = await axios.get(`${API_BASE_URL}/liked-products`, {
-//                     headers: { Authorization: `Bearer ${token}` },
-//                 });
-//                 // Ensure response data is an array (backend returns { likedProducts: [...] })
-//                 const data = Array.isArray(likedResponse.data.likedProducts)
-//                     ? likedResponse.data.likedProducts
-//                     : []; // Default to empty array if not an array
-//                 // Update count with the number of liked products
-//                 setLikedProductsCount(data.length);
-
-//                 // Fetch cart count
-//                 const cartResponse = await axios.get(`${API_BASE_URL}/shopping-cart/count`, {
-//                     headers: { Authorization: `Bearer ${token}` },
-//                 });
-//                 setCartCount(cartResponse.data.count);
+//                 // Fetch counts
+//         await updateCounts(); // Use context's updateCounts
 
 //             } catch (error: any) {
 //                 console.error('Failed to load user details/liked products/cart count: ', error);
-//                 // Set count to 0 on error to avoid displaying incorrect data
-//                 setLikedProductsCount(0);
-//                 setCartCount(0);
 //                 // If no token is fount OR jwt has expired
 //                 if (error.response?.status === 401) {
 //                     localStorage.removeItem("token");
@@ -368,7 +344,7 @@ export default Header
 //         };
 
 //         fetchUserData();  // Run the function
-//     }, [navigate]); 
+//     }, [navigate, updateCounts]); 
 
 
 //     const handleLogOut = () => {
@@ -409,7 +385,7 @@ export default Header
 
 
 //     return (
-//         <header className="bg-gray-800 text-white p-5 min-h-[10vh]">
+//         <header className="sticky top-0 z-50 bg-gray-800 text-white p-5 min-h-[10vh]">
 //             <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
 
 //                 {/* Logo */}
@@ -441,6 +417,11 @@ export default Header
 //                                 aria-label="Go to dashboard"
 //                             >
 //                                 <UserCircleIcon className="h-7 w-7 hover:text-blue-400" />
+//                             </button>
+
+//                             {/* Notification icon */}
+//                             <button>
+//                                 <BellIcon className="h-7 w-7 hover:text-blue-400 cursor-pointer" />
 //                             </button>
 
 //                             {/* Liked Products/Favorites Icon */}
@@ -496,4 +477,4 @@ export default Header
 //     )
 // }
 
-// export default Header
+// export default Header;

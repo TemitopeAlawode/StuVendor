@@ -181,16 +181,32 @@ const ShoppingCartPage = () => {
 
     // <<<<---------------------------------->>>>
     // Function to handle checkout
-    const handleCheckOut = () => {
-        // Placeholder for checkout logic
-            Swal.fire({
-              title: "Checkout",
-              text: "Proceeding to checkout...",
-              icon: "info",
-              confirmButtonText: "OK",
-            });
-            // navigate("/checkout"); 
-    }
+     const handleCheckOut = () => {
+        if (cartProducts.length === 0) {
+          Swal.fire({
+            title: "Error!",
+            text: "Your cart is empty. Add items to proceed to checkout.",
+            icon: "error",
+            confirmButtonText: "OK",
+          });
+          return;
+        }
+    
+        // Validate stock availability
+        const outOfStock = cartProducts.find((item) => item.quantity > item.Product.stock);
+        if (outOfStock) {
+          Swal.fire({
+            title: "Error!",
+            text: `Insufficient stock for ${outOfStock.Product.name}. Available: ${outOfStock.Product.stock}.`,
+            icon: "error",
+            confirmButtonText: "OK",
+          });
+          return;
+        }
+    
+        // Navigate to checkout page, passing cart data
+        navigate("/checkout", { state: { cartProducts, subtotal: calculateSubtotal() } });
+      };
     // <<<<---------------------------------->>>>
 
 
@@ -212,7 +228,7 @@ const ShoppingCartPage = () => {
             {/* Header Component */}
             <Header />
 
-            <section className="py-12 px-8">
+            <section className="py-8 px-8">
                 <div>
 
                     {/* Heading and Continue Shopping Button */}
@@ -311,9 +327,9 @@ const ShoppingCartPage = () => {
                                         </span>
                                     </div>
 
-                                    {/* Shipping Fee */}
+                                    {/* Delivery Fee */}
                                     <div className="flex justify-between mb-4">
-                                        <span className="text-gray-600">Shipping Fee</span>
+                                        <span className="text-gray-600">Delivery Fee</span>
                                         <span className="text-gray-900">
                                             &#8358; TBD
                                         </span>

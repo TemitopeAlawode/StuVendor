@@ -41,9 +41,9 @@ const ProductDetailsPage = () => {
     const [quantity, setQuantity] = useState(1);
 
     // Use context for updating count
-    const { updateCounts } = useCount(); 
+    const { updateCounts } = useCount();
 
-  // <<<<---------------------------------->>>>
+    // <<<<---------------------------------->>>>
     useEffect(() => {
         const fetchProductAndVendor = async () => {
             try {
@@ -55,17 +55,17 @@ const ProductDetailsPage = () => {
                 const vendorResponse = await axios.get(`${API_BASE_URL}/vendors/${productResponse.data.VendorId}`);
                 setVendor(vendorResponse.data);
 
-        // Record product view for logged-in users
-        const token = localStorage.getItem('token');
-        if (token && productResponse && vendorResponse) {
-            await axios.post(`${API_BASE_URL}/viewed-products`, 
-                {
-                    ProductId: productResponse.data.id,
-                    VendorId: productResponse.data.VendorId
-                },
-            {  headers: { Authorization: `Bearer ${token}` }, }
-            );
-        }
+                // Record product view for logged-in users
+                const token = localStorage.getItem('token');
+                if (token && productResponse && vendorResponse) {
+                    await axios.post(`${API_BASE_URL}/viewed-products`,
+                        {
+                            ProductId: productResponse.data.id,
+                            VendorId: productResponse.data.VendorId
+                        },
+                        { headers: { Authorization: `Bearer ${token}` }, }
+                    );
+                }
 
             } catch (error: any) {
                 console.error("Failed to fetch product or vendor:", error.response?.data || error);
@@ -90,10 +90,10 @@ const ProductDetailsPage = () => {
         };
         fetchProductAndVendor();
     }, [id, navigate]); // Dependency array ensures effect runs when navigate changes
-  // <<<<---------------------------------->>>>
+    // <<<<---------------------------------->>>>
 
 
-  // <<<<---------------------------------->>>>
+    // <<<<---------------------------------->>>>
     // Handle Add to Cart with quantity
     const handleAddToCart = async () => {
         if (!product || quantity > product.stock) {
@@ -124,7 +124,7 @@ const ProductDetailsPage = () => {
             );
 
             // Refresh counts
-        await updateCounts(); 
+            await updateCounts();
 
             Swal.fire({
                 title: 'Added to Cart!',
@@ -148,7 +148,7 @@ const ProductDetailsPage = () => {
             });
         }
     }
-  // <<<<---------------------------------->>>>
+    // <<<<---------------------------------->>>>
 
 
     return (
@@ -219,6 +219,13 @@ const ProductDetailsPage = () => {
                                     onClick={() => navigate("/products")}
                                 >
                                     Back to Products
+                                </button>
+                                <button
+                                    className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors cursor-pointer"
+                                //   onClick={() => setIsChatOpen(true)}
+                                //   disabled={!socket || !product}
+                                >
+                                    Chat with Vendor
                                 </button>
                             </div>
 

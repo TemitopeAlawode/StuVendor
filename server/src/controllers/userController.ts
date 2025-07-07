@@ -18,6 +18,8 @@ import dotenv from 'dotenv';
 import { v4 as UUIDV4 } from 'uuid';
 import PasswordReset from '../models/PasswordReset';
 import axios from 'axios';
+import OrderProducts from '../models/OrderProducts';
+import Order from '../models/Order';
 // Loads .env file contents into process.env
 dotenv.config();
 
@@ -35,8 +37,8 @@ interface CustomUser {
   profileCompleted: boolean
   verified: boolean; // New field to track verification status
     UserId: string
-
 }
+
 
 
 // ================================================
@@ -679,6 +681,84 @@ export const resetPasswordHandler = async (req: Request, res: Response) => {
 }
 
 
+
+// ================================================
+// @desc   View/Get customers orders
+// @route  GET auth/users/orders
+// @access Private
+// ================================================
+/*
+Step 1: Fetch the user id.
+Step 2: Query OrderProducts where UserId matches the user’s ID to get all products ordered by this user.
+Step 3: Extract unique OrderIds from the OrderProducts results.
+Step 4: Fetch Order records for those OrderIds.
+Step 5: Combine the data to create a response where each order includes its associated products from OrderProducts.
+Output: The response is a list of orders with their details (e.g., totalAmount, orderStatus) and the vendor’s products within each order (e.g., ProductId, quantity, price).
+*/
+export const getUserOrdersHandler = async (req: Request, res: Response) => {
+    try {
+        // Fetch user ID
+        const user = req.user as CustomUser;
+        const userId = user.UserId || user.id;
+        
+        
+        console.log('User Id: ', userId);
+        
+        // Fetch OrderProducts entries for this user
+        const orderProducts = await OrderProducts.findAll({
+            where: { UserId: userId },
+            attributes: ['OrderId', 'ProductId', 'quantity', 'price'], // Relevant fields
+        });
+
+        if (!orderProducts.length) {
+            res.status(200).json([]);
+            // res.status(200).json({ message: 'No orders found for this vendor.' });
+            return;
+        }
+
+        // Get unique OrderIds from OrderProducts
+        /*
+        map()  | Pulls all `OrderId`s from the array orderProducts     
+        Set()  | Removes duplicates and only keeps unique values    
+        [... ] | Turns Set back into array 
+        */
+        const orderIds = [...new Set(orderProducts.map((ord) => ord.OrderId))];
+
+        // Fetch Order details/records for these OrderIds
+        const orders = await Order.findAll({
+            where: { id: orderIds },
+        });
+
+        // Combine OrderProducts with Orders for response
+        /*
+        Loops through all orders.
+        For each order, finds its matching products.
+        ...order.toJSON() - This spreads all the original order data into a plain object
+        Combines them into a new object with the order info and its products.
+        Useful when returning vendor orders with their product details in one response.
+        */
+        const userOrders = orders.map((order) => ({
+            ...order.toJSON(),
+            Products: orderProducts
+                .filter((op) => op.OrderId === order.id)
+                .map((op) => ({
+                    ProductId: op.ProductId,
+                    quantity: op.quantity,
+                    price: op.price,
+                })),
+        }));
+
+
+        console.log('User Orders: ', userOrders)
+
+        res.status(200).json(userOrders);
+        // res.status(200).json(userId);
+
+    } catch (error: any) {
+        console.error("Error fetching user orders:", error);
+        res.status(500).json({ message: "Failed to fetch orders", error: error.message });
+    }
+}
 
 
 

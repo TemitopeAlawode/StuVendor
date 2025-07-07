@@ -3,6 +3,7 @@ import sequelize from '../db';
 import User from './User';
 import Product from './Product';
 import Vendor from './Vendor';
+import Order from './Order';
 
 interface OrderHistoryAttributes {
     sn: number;
@@ -50,6 +51,7 @@ const OrderHistory = sequelize.define<OrderHistoryInstance>(
         orderId: {
             type: DataTypes.UUID,
             allowNull: false,
+        //   references: { model: 'Orders', key: 'id' },
         },
         quantity: {
             type: DataTypes.INTEGER,
@@ -78,5 +80,6 @@ const OrderHistory = sequelize.define<OrderHistoryInstance>(
 OrderHistory.belongsTo(User);
 OrderHistory.belongsTo(Product);
 OrderHistory.belongsTo(Vendor);
+OrderHistory.belongsTo(Order);
 
 export default OrderHistory;

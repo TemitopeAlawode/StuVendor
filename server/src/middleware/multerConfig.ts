@@ -59,7 +59,7 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCa
 const upload = multer({
   storage, // Use the defined storage configuration
   fileFilter, // Apply the image file type filter
-  limits: { fileSize: 1024 * 1024 * 1 }, // Limit file size to 1MB
+  limits: { fileSize: 1024 * 1024 * 2 }, // Limit file size to 2MB
 });
 
 // Export the Multer instance for use in routes

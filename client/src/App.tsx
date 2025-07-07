@@ -19,6 +19,9 @@ import ShoppingCartPage from "./pages/ShoppingCartPage"
 import CustomerDashboardPage from "./dashboards/CustomerDashboardPage"
 import { CountProvider } from "./contexts/CountContext"
 import RecommendedProductsPage from "./pages/RecommendedProductsPage"
+import CheckoutPage from "./pages/CheckoutPage"
+import VendorOrdersPage from "./pages/VendorOrdersPage"
+import CustomerOrdersPage from "./pages/CustomerOrdersPage"
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -45,6 +48,9 @@ function App() {
          <Route path="/shopping-cart" element={ <ShoppingCartPage /> } />
          <Route path="/customer-dashboard" element={ <CustomerDashboardPage /> } />
          <Route path="/recommended-products" element={<RecommendedProductsPage />} />
+         <Route path="/checkout" element={ <CheckoutPage /> } />
+         <Route path="/vendor/orders" element={ <VendorOrdersPage /> } />
+         <Route path="/users/orders" element={ <CustomerOrdersPage /> } />
         </Routes>
       </GoogleOAuthProvider>
       </CountProvider>

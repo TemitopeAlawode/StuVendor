@@ -19,6 +19,8 @@ import searchedProductRoutes from './routes/searchedProductRoutes';
 import shoppingCartRoutes from './routes/shoppingCartRoutes';
 import viewedProductsRoutes from './routes/viewedProductsRoutes';
 import recommendationsRoutes from './routes/recommendationsRoutes';
+import paymentRoutes from './routes/paymentRoutes';
+import orderRoutes from './routes/orderRoutes';
 
 
 import session from 'express-session';
@@ -68,6 +70,8 @@ app.use('/searched-products', searchedProductRoutes);
 app.use('/shopping-cart', shoppingCartRoutes);
 app.use('/viewed-products', viewedProductsRoutes);
 app.use('/api', recommendationsRoutes);
+app.use('/payments', paymentRoutes);
+app.use('/orders', orderRoutes);
 
 // Export app
 export default app;

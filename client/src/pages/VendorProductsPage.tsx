@@ -71,6 +71,7 @@ const VendorProductsPage = () => {
 
   // For Loading..
   const [loading, setLoading] = useState(true);
+  // const [addFormLoading, setAddFormLoading] = useState(true);
 
   // Hook to navigate to other routes
   const navigate = useNavigate();
@@ -187,6 +188,7 @@ const VendorProductsPage = () => {
     if (!token) {
       return;
     }
+    // setAddFormLoading(true);
     try {
       // Using FormData to handle file upload and form fields
       const formData = new FormData();
@@ -239,7 +241,10 @@ const VendorProductsPage = () => {
         icon: "error",
         confirmButtonText: "OK",
       });
-    }
+    } 
+    // finally {
+    //   setAddFormLoading(false);
+    // }
   };
   // <<<---------------------------------->>>
 
@@ -330,6 +335,7 @@ const VendorProductsPage = () => {
       </div>
     );
   }
+
 
 
   return (
@@ -476,11 +482,21 @@ const VendorProductsPage = () => {
                 </div>
 
                 {/* Add Product Submit button */}
-                <button
+
+               <button
                   type="submit"
                   className="bg-green-600 text-white px-4 py-2 rounded cursor-pointer hover:bg-green-500">
-                  Add Product
+                 Add Product
                 </button>
+
+                {/* <button
+                  type="submit"
+                  className="bg-green-600 text-white px-4 py-2 rounded cursor-pointer hover:bg-green-500">
+                   {addFormLoading && (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                   )}
+                  {addFormLoading ? "Adding..." : "Add Product"}
+                </button> */}
 
               </div>
             </form>

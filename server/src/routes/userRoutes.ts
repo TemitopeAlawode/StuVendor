@@ -19,7 +19,8 @@ import {
     logoutUserHandler,
     forgotPasswordHandler,
     resetPasswordHandler,
-    verifyEmailHandler
+    verifyEmailHandler,
+    getUserOrdersHandler
 } from '../controllers/userController';
 
 // Importing Middleware for authentication/validation of tokens and check user role
@@ -29,6 +30,9 @@ import checkUserRole from '../middleware/checkUserRole';
 
 // Initialize router
 const router = express.Router();
+
+// Get orders
+router.get('/users/orders', validateToken,  getUserOrdersHandler);
 
 // Manual Signup and Signin
 router.post('/signup', createUserHandler);
@@ -73,5 +77,6 @@ router.post('/reset-password', resetPasswordHandler);
 
 // Verify Email Route
 router.get("/verify-email", verifyEmailHandler);
+
 
 export default router;

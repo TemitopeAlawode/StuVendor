@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { jwtDecode } from "jwt-decode";
+import BackButton from "../components/BackButton";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -138,24 +139,30 @@ const CustomerDashboardPage = () => {
 
             <section className="bg-gray-100 min-h-[87vh] p-8">
                 <div className="max-w-7xl mx-auto">
-                    <h1 className="text-3xl font-bold text-gray-800 mb-6">
+
+                     <div className="flex items-center space-x-4 mb-6">
+            {/* Button for navigating back to previous page*/}
+
+            <BackButton />
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
                         Welcome, {user?.name || "Customer"}
                     </h1>
+                    </div>
 
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Profile Overview */}
-                        <div className="bg-white p-6 rounded-lg shadow-md">
-                            <h2 className="text-xl font-semibold text-gray-800 mb-4">About You</h2>
+                        <div className="bg-white p-4 rounded-lg shadow-md">
+                            <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">About You</h2>
 
                             {!showEditForm ? (
-                                <div>
-                                    <p><strong>Name: </strong> {user?.name || "Not provided"}</p>
-                                    <p><strong>Email: </strong> {user?.email || "Not provided"}</p>
-                                    <p><strong>User Type: </strong> {user?.userType || "Not provided"}</p>
+                                <div className="space-y-2">
+                                    <p className="text-sm sm:text-base"><strong>Name: </strong> {user?.name || "Not provided"}</p>
+                                    <p className="text-sm sm:text-base"><strong>Email: </strong> {user?.email || "Not provided"}</p>
+                                    <p className="text-sm sm:text-base"><strong>User Type: </strong> {user?.userType || "Not provided"}</p>
                                     <button
                                         onClick={() => setShowEditForm(true)}
-                                        className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 cursor-pointer "
+                                        className="mt-4 bg-blue-950 text-white px-4 py-2 rounded-lg hover:bg-blue-900 cursor-pointer transition-colors"
                                     >
                                         Edit Profile
                                     </button>
@@ -164,7 +171,7 @@ const CustomerDashboardPage = () => {
                             ) : (
                                 <div className="space-y-4">
                                     {/* Vendor's profile Picture */}
-                                    <div>
+                                    <div >
 
                                         {/* Name Input */}
                                         <div>
@@ -173,7 +180,7 @@ const CustomerDashboardPage = () => {
                                                 type="text"
                                                 value={editedName}
                                                 onChange={(e) => setEditedName(e.target.value)}
-                                                className="w-full border border-gray-400 px-4 py-2 mb-4 rounded-lg focus:outline-none"
+                                                className="w-full border border-gray-400 px-4 py-2 mb-4 rounded-lg focus:outline-none "
                                                 required
                                             />
                                         </div>
@@ -208,7 +215,7 @@ const CustomerDashboardPage = () => {
                                     </div>
 
                                     {/* 'Save Changes' and 'Cancel' button */}
-                                    <div className="space-x-4">
+                                    <div className="flex flex-col sm:flex-row gap-2">
 
                                         {/* Save Changes button*/}
                                         <button
@@ -235,8 +242,8 @@ const CustomerDashboardPage = () => {
                             <h2 className="text-xl font-semibold text-gray-800 ">Recent Orders</h2>
 
                             <button
-                                onClick={() => navigate("/orders")}
-                                className="mt-4 text-blue-600 hover:text-blue-900 font-medium"
+                                onClick={() => navigate("/users/orders")}
+                                className="mt-4 text-blue-800 hover:text-blue-900 font-medium cursor-pointer"
                             >
                                 View All Orders &rarr;
                             </button>
@@ -246,17 +253,17 @@ const CustomerDashboardPage = () => {
                             <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Links</h2>
                             <ul className="space-y-2 font-medium">
                                 <li>
-                                    <Link to="/liked-products" className="text-blue-600 hover:text-blue-900">
+                                    <Link to="/liked-products" className="text-blue-800 hover:text-blue-900">
                                         View Liked Products
                                     </Link>
                                 </li>
                                 <li>
-                                    <Link to="/shopping-cart" className="text-blue-600 hover:text-blue-900">
+                                    <Link to="/shopping-cart" className="text-blue-800 hover:text-blue-900">
                                         View Cart
                                     </Link>
                                 </li>
                                 <li>
-                                    <Link to="/orders" className="text-blue-600 hover:text-blue-900">
+                                    <Link to="/users/orders" className="text-blue-800 hover:text-blue-900">
                                         Order History
                                     </Link>
                                 </li>

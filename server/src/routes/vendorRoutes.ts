@@ -10,6 +10,10 @@ import {
     getVendorByIdHandler,
     getBanks,
     verifyBankAccount,
+    getVendorOrdersHandler,
+    getVendorBalanceHandler,
+    withdrawFromVendorBalanceHandler,
+    getVendorOrderCountHandler
 } from '../controllers/vendorController';
 
 // Importing Middleware for authentication/validation of tokens and user role
@@ -27,8 +31,21 @@ const router = express.Router();
 
 // Get a list of banks.
 router.get('/banks', getBanks)
+
+// Verify bank account
 router.post('/verify-bank-account', verifyBankAccount);
 
+// Get orders
+router.get('/orders', validateToken,  getVendorOrdersHandler);
+
+// Get balance
+router.get('/balance', validateToken,  getVendorBalanceHandler);
+
+// Initiate withdrawal
+router.post('/withdraw', validateToken, withdrawFromVendorBalanceHandler);
+
+// Get pending order count.
+router.get('/orders/count', validateToken,  getVendorOrderCountHandler);
 
 // router.post('/complete-vendor-profile', validateToken, checkIfVendor, createVendorHandler);
 router.post('/create-vendor-profile', validateToken, checkUserRole('vendor'), uploadVendorMiddleware, createVendorHandler);

@@ -277,6 +277,7 @@ const CreateVendorProfilePage = () => {
                                 onChange={(e) => setPhoneNumber(e.target.value)}
                                 className="w-full border border-gray-400 px-4 py-2 rounded-lg focus:outline-none"
                                 placeholder="Enter your phone number (e.g. 1234567890)"
+                                maxLength={11}
                                 required
                             />
                         </div>
@@ -340,6 +341,7 @@ const CreateVendorProfilePage = () => {
                                         }}
                                     className="w-full border border-gray-400 px-4 py-2 rounded-l-lg focus:outline-none"
                                     placeholder="Enter your account number e.g. 1234567890"
+                                    maxLength={10}
                                     required
                                 />
                                 <button

@@ -35,6 +35,7 @@ module.exports = {
       orderId: {
           type: Sequelize.UUID,
           allowNull: false,
+          references: { model: 'Orders', key: 'id' },
       },
       quantity: {
           type: Sequelize.INTEGER,
@@ -69,3 +70,4 @@ module.exports = {
     await queryInterface.dropTable('OrderHistory');
   }
 };
+
