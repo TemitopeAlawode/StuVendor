@@ -6,7 +6,7 @@ import Vendor from './Vendor';
 import Order from './Order';
 
 interface OrderProductsAttributes {
-  sn?: string;
+  sn?: number;
   id: string;
   UserId: string;
   ProductId: string;

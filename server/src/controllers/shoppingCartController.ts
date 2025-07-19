@@ -199,3 +199,30 @@ export const getCartCountHandler = async (req: Request, res: Response) => {
         res.status(500).json({ message: "Failed to fetch cart count.", error: error.message });
     }
 }
+
+
+// ================================================
+// @desc   Clear all products in the user's cart
+// @route  DELETE /shopping-cart/clear
+// @access Private
+// ================================================
+export const clearCartHandler = async (req: Request, res: Response) => {
+    try {
+        const user = req.user as User;
+        const userId = user.UserId || user.id; // UserId for vendors, id for others
+        if (!userId) {
+            res.status(401).json({ message: "Unauthorized: No user ID found." });
+            return;
+        }
+
+        // Remove/Destroy all items in the cart
+        await ShoppingCart.destroy({
+            where: { UserId: userId }
+        });
+
+        res.status(200).json({ message: "Cart cleared successfully." });
+    } catch (error: any) {
+        console.error("Failed to clear cart:", error.message || error);
+        res.status(500).json({ message: "Failed to clear cart." });
+    }
+}

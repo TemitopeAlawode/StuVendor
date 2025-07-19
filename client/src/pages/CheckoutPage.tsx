@@ -10,6 +10,9 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
 
+// Import the context hook
+import { useCount } from "../contexts/CountContext";
+
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const FLUTTERWAVE_PUBLIC_KEY = import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY;
 
@@ -64,6 +67,9 @@ const CheckoutPage = () => {
 
 
     const navigate = useNavigate();
+
+      // Use context for updating count
+    const { updateCounts } = useCount(); 
 
 
     // <<<<---------------------------------->>>>
@@ -241,6 +247,14 @@ const CheckoutPage = () => {
                                     { headers: { Authorization: `Bearer ${token}` } }
                                 );
 
+                                // Clear cart
+                                await axios.delete(`${API_BASE_URL}/shopping-cart/clear`, {
+                                    headers: { Authorization: `Bearer ${token}` }
+                                });
+
+                                // Update counts to set cartCount to 0
+                                await updateCounts();
+
                                 // Trigger split calculation 
                                 await axios.post(
                                     `${API_BASE_URL}/payments/split`,
@@ -262,7 +276,9 @@ const CheckoutPage = () => {
                                     title: "Success!",
                                     text: "Payment successful! Your order has been placed.",
                                     icon: "success",
-                                })
+                                });
+                                // Navigate to orders page
+                                navigate('/users/orders');
                                 console.log('Payment Verification Complete and Order created..');
                             }
                             else {

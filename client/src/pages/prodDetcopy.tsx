@@ -1,18 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useNavigate, useParams } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 
-import { io, Socket } from "socket.io-client";
-
 // Import the context hook
 import { useCount } from "../contexts/CountContext";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-const SOCKET_URL = import.meta.env.VITE_BACKEND_URL;
 
 // Define Product interface for type safety
 interface Product {
@@ -28,20 +25,9 @@ interface Product {
 
 interface Vendor {
     id: string;
-    UserId: string
     businessName: string;
     createdAt: Date;
 }
-
-interface Message {
-    id: string;
-    senderId: string;
-    receiverId: string;
-    content: string;
-    isRead: boolean;
-    createdAt: string;
-}
-
 
 const ProductDetailsPage = () => {
     // Get product ID from the URL
@@ -62,12 +48,9 @@ const ProductDetailsPage = () => {
     const [isChatOpen, setIsChatOpen] = useState(false);
 
     // For date and timestamp
-    // const now = new Date();
-    // const formattedDateTime = `${now.toDateString()} ${now.toLocaleTimeString()}`;
+    const now = new Date();
+    const formattedDateTime = `${now.toDateString()} ${now.toLocaleTimeString()}`;
 
-    const [messages, setMessages] = useState<Message[]>([]);
-        const [newMessage, setNewMessage] = useState("");
-        const socketRef = useRef<Socket | null>(null);
 
     // <<<<---------------------------------->>>>
     useEffect(() => {
@@ -118,110 +101,6 @@ const ProductDetailsPage = () => {
     }, [id, navigate]); // Dependency array ensures effect runs when navigate changes
     // <<<<---------------------------------->>>>
 
-    
-
-     // Fetch chat history when chat modal opens
-    useEffect(() => {
-        if (isChatOpen && vendor?.UserId) {
-            const fetchChatHistory = async () => {
-                try {
-                    const token = localStorage.getItem("token");
-                    const response = await axios.get(`${API_BASE_URL}/messages?receiverId=${vendor.UserId}`, {
-                        headers: { Authorization: `Bearer ${token}` },
-                        // params: { receiverId: vendor.UserId },
-                    });
-                    setMessages(response.data);
-                } catch (error) {
-                    console.error("Failed to fetch chat history:", error);
-                    Swal.fire({
-                        title: "Error!",
-                        text: "Failed to load chat history.",
-                        icon: "error",
-                        confirmButtonText: "OK",
-                    });
-                }
-            };
-            fetchChatHistory();
-        }
-    }, [isChatOpen, vendor?.UserId]);
-
-    // Initialize Socket.IO connection
-        useEffect(() => {
-            if (isChatOpen) {
-                const token = localStorage.getItem("token");
-                if (!token) {
-                    Swal.fire({
-                        title: "Login Required",
-                        text: "Please log in to chat with the vendor.",
-                        icon: "warning",
-                        confirmButtonText: "OK",
-                    }).then(() => {
-                        setIsChatOpen(false);
-                        navigate("/auth/login");
-                    });
-                    return;
-                }
-    
-                // Initialize Socket.IO
-                socketRef.current = io(SOCKET_URL, {
-                    auth: { token },
-                });
-    
-                // Handle receiving messages
-                socketRef.current.on("receiveMessage", (message: Message) => {
-                    setMessages((prev) => [...prev, message]);
-                });
-    
-                // Handle errors
-                socketRef.current.on("error", ({ message }: { message: string }) => {
-                    Swal.fire({
-                        title: "Error!",
-                        text: message,
-                        icon: "error",
-                        confirmButtonText: "OK",
-                    });
-                });
-    
-                // Handle connection errors
-                socketRef.current.on("connect_error", (error: any) => {
-                    console.error("Socket connection error:", error);
-                    Swal.fire({
-                        title: "Connection Error!",
-                        text: "Failed to connect to chat server.",
-                        icon: "error",
-                        confirmButtonText: "OK",
-                    });
-                });
-    
-                // Cleanup on unmount or modal close
-                return () => {
-                    socketRef.current?.disconnect();
-                    socketRef.current = null;
-                };
-            }
-        }, [isChatOpen, navigate]);
-    
-        // Handle sending a message
-        const handleSendMessage = () => {
-           if (!newMessage.trim() || !vendor?.UserId) {
-                      console.error("Cannot send message:", { newMessage: newMessage.trim(), vendorUserId: vendor?.UserId });
-                      Swal.fire({
-                          title: "Error!",
-                          text: "Message or recipient is missing.",
-                          icon: "error",
-                          confirmButtonText: "OK",
-                      });
-                      return;
-                  }
-          
-                  console.log("Sending message to receiverId:", vendor.UserId);
-                  socketRef.current?.emit("sendMessage", {
-                      receiverId: vendor.UserId,
-                      content: newMessage,
-                  });
-                  setNewMessage("");
-        };
-    
 
     // <<<<---------------------------------->>>>
     // Handle Add to Cart with quantity
@@ -365,41 +244,28 @@ const ProductDetailsPage = () => {
                 </div>
 
                 {/* Chat Modal */}
-                 {isChatOpen && (
-                    <div className="fixed inset-0 flex items-center justify-center z-50" style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}>
+                {isChatOpen && (
+                    <div className="fixed inset-0 flex items-center justify-center z-50"
+                        style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}>
                         <div className="bg-white rounded-lg p-6 w-full max-w-md">
                             <h2 className="text-lg font-semibold text-gray-800 mb-4">Chat with {vendor?.businessName}</h2>
+
                             <div className="flex-grow max-h-[50vh] overflow-y-auto p-4 bg-gray-50 rounded-lg">
-                                {messages.length === 0 ? (
-                                    <p className="text-gray-500">No messages yet.</p>
-                                ) : (
-                                    messages.map((msg) => (
-                                        <div
-                                            key={msg.id}
-                                            className={`mb-4 ${msg.senderId === localStorage.getItem("userId") ? "text-right" : "text-left"}`}
-                                        >
-                                            <p
-                                                className={`inline-block p-2 rounded-lg ${
-                                                    msg.senderId === localStorage.getItem("userId")
-                                                        ? "bg-blue-100 text-blue-800"
-                                                        : "bg-gray-200 text-gray-800"
-                                                }`}
-                                            >
-                                                {msg.content}
-                                            </p>
-                                            <p className="text-xs text-gray-400 mt-1">
-                                                {new Date(msg.createdAt).toLocaleString()}
-                                            </p>
-                                        </div>
-                                    ))
-                                )}
+                                <div>
+
+
+                                    <p className="text-xs text-gray-400 mt-1">{formattedDateTime}</p>
+                                    {/* <p className="text-xs text-gray-400 mt-1">
+                                    {new Date().toLocaleString()}
+                                    </p> */}
+
+                                </div>
                             </div>
+
                             <textarea
                                 className="w-full border border-gray-400 rounded-lg p-2 mb-4 text-sm sm:text-base"
                                 rows={4}
                                 placeholder="Type your message here..."
-                                value={newMessage}
-                                onChange={(e) => setNewMessage(e.target.value)}
                             />
                             <div className="flex justify-end space-x-4">
                                 <button
@@ -410,7 +276,6 @@ const ProductDetailsPage = () => {
                                 </button>
                                 <button
                                     className="bg-blue-950 text-white px-4 py-2 rounded-lg hover:bg-blue-900 transition-colors"
-                                    onClick={handleSendMessage}
                                 >
                                     Send
                                 </button>

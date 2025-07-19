@@ -269,6 +269,17 @@ const CustomerDashboardPage = () => {
                                 </li>
                             </ul>
                         </div>
+                          {/* Chat */}
+                        {/* <div className="bg-white p-6 rounded-lg shadow-md">
+                            <h2 className="text-xl font-semibold text-gray-800 ">Your Chats</h2>
+
+                            <button
+                                onClick={() => navigate("/vendor/chats")}
+                                className="mt-4 text-blue-800 hover:text-blue-900 font-medium cursor-pointer"
+                            >
+                                View All Chats &rarr;
+                            </button>
+                        </div> */}
                     </div>
                 </div>
             </section>

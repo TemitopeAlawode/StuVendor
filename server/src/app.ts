@@ -21,6 +21,7 @@ import viewedProductsRoutes from './routes/viewedProductsRoutes';
 import recommendationsRoutes from './routes/recommendationsRoutes';
 import paymentRoutes from './routes/paymentRoutes';
 import orderRoutes from './routes/orderRoutes';
+import messageRoutes from './routes/messageRoutes';
 
 
 import session from 'express-session';
@@ -72,6 +73,7 @@ app.use('/viewed-products', viewedProductsRoutes);
 app.use('/api', recommendationsRoutes);
 app.use('/payments', paymentRoutes);
 app.use('/orders', orderRoutes);
+app.use('/messages', messageRoutes)
 
 // Export app
 export default app;

@@ -65,6 +65,11 @@ const LoginPage = () => {
             const token = response.data.token;
             localStorage.setItem("token", token); // Store the token
 
+            // Setting user's id for the way messages will be displayed.
+            localStorage.setItem("userId", response.data.user.id); // Store userId
+            console.log('userId: ', response.data.user.id);
+
+
             // Decode the token to get userType
             const decodedToken: DecodedJWToken = jwtDecode(token);
             const userType = decodedToken.userType;

@@ -268,7 +268,7 @@ export default Header;
 // // Import the context hook
 // import { useCount } from "../contexts/CountContext";
 
-// const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+// const API_BASE_URL = env.VITE_BACKEND_URL;
 
 // interface Product {
 //     id: string;

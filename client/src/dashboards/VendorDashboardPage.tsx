@@ -65,8 +65,11 @@ const VendorDashboardPage = () => {
   // State for 'verified' (after verification)
   const [isVerified, setIsVerified] = useState(false);
 
+  const [loading, setLoading] = useState(false);
+
   // Hook for navigation
   const navigate = useNavigate();
+
 
   // Effect to check authentication and fetch vendor profile
   useEffect(() => {
@@ -87,6 +90,7 @@ const VendorDashboardPage = () => {
 
     // Function to fetch vendor profile
     const fetchVendorProfile = async () => {
+       setLoading(true);
       try {
         const response = await axios.get(`${API_BASE_URL}/vendors/vendor-profile`, {
           headers: { Authorization: `Bearer ${token}` } // Include token in headers
@@ -124,7 +128,9 @@ const VendorDashboardPage = () => {
             confirmButtonText: "OK",
           });
         };
-      };
+      }finally {
+      setLoading(false);
+    };
 
     }
 
@@ -229,6 +235,14 @@ const VendorDashboardPage = () => {
     };
   };
 
+if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-950"></div>
+      </div>
+    );
+  }
+
 
   return (
     <div>
@@ -239,7 +253,7 @@ const VendorDashboardPage = () => {
       <section className='bg-gray-100 min-h-[87vh] p-8'>
         {/* <h1 className="text-3xl font-bold text-gray-800 mb-4">Vendor Dashboard</h1> */}
 
-        <div className="flex items-center justify-between mb-10">
+        <div className="flex items-center justify-between mb-6 sm:mb-10">
 
           <div className="flex items-center space-x-4">
             {/* Button for navigating back to previous page*/}
@@ -492,15 +506,21 @@ const VendorDashboardPage = () => {
 
           {/* Order Management Section */}
           <div className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center justify-center">
-            <h2 className="text-xl font-semibold mb-4">Manage Orders</h2>
+            <h2 className="text-xl font-semibold mb-4">Manage Orders & View Chats</h2>
             <p className="text-gray-600">
-              View and manage your orders.
+              View, manage your orders and view chats.
             </p>
 
             <button
               onClick={() => navigate('/vendor/orders')}
               className="bg-blue-950 text-white px-4 py-2 rounded mt-4 cursor-pointer hover:bg-blue-900">
               View Orders
+            </button>
+
+              <button
+              onClick={() => navigate('/vendor/chats')}
+              className="bg-blue-950 text-white px-4 py-2 rounded mt-4 cursor-pointer hover:bg-blue-900">
+              View Chats
             </button>
 
           </div>

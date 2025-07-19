@@ -120,10 +120,10 @@ export const getRecommendedProducts = async (req: Request, res: Response) => {
         };
 
         // Assign weights to interactions to reflect preference strength
-        // Likes (0.4): Strongest signal, as liking is a deliberate action
-        likedProducts.forEach((lp) => updateScores(lp, 0.4));
-        // Cart items (0.3): Indicates strong purchase intent
-        cartProducts.forEach((cp) => updateScores(cp, 0.3));
+        // Cart items (0.4): Strongest signal, indicates strong purchase intent
+        cartProducts.forEach((cp) => updateScores(cp, 0.4));
+        // Likes (0.3): Liking is a deliberate action of an interest in the product
+        likedProducts.forEach((lp) => updateScores(lp, 0.3));
         // Views (0.2): Suggests moderate interest, as viewing is passive
         viewedProducts.forEach((vp) => updateScores(vp, 0.2));
         // Searches (0.1): Weakest signal, as searches may be exploratory

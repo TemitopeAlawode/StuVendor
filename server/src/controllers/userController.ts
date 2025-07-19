@@ -727,6 +727,7 @@ export const getUserOrdersHandler = async (req: Request, res: Response) => {
         // Fetch Order details/records for these OrderIds
         const orders = await Order.findAll({
             where: { id: orderIds },
+            order: [["orderDate", "DESC"]], // Sort by orderDate in descending order
         });
 
         // Combine OrderProducts with Orders for response

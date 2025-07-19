@@ -22,6 +22,7 @@ import RecommendedProductsPage from "./pages/RecommendedProductsPage"
 import CheckoutPage from "./pages/CheckoutPage"
 import VendorOrdersPage from "./pages/VendorOrdersPage"
 import CustomerOrdersPage from "./pages/CustomerOrdersPage"
+import VendorChatPage from "./pages/VendorChatPage"
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -51,6 +52,7 @@ function App() {
          <Route path="/checkout" element={ <CheckoutPage /> } />
          <Route path="/vendor/orders" element={ <VendorOrdersPage /> } />
          <Route path="/users/orders" element={ <CustomerOrdersPage /> } />
+         <Route path="/vendor/chats" element={ <VendorChatPage /> } />
         </Routes>
       </GoogleOAuthProvider>
       </CountProvider>

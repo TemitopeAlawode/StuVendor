@@ -6,7 +6,8 @@ addToCartHandler,
 getCartProductsHandler,
 updateCartProductHandler,
 removeProductFromCartHandler,
-getCartCountHandler
+getCartCountHandler,
+clearCartHandler
 } from '../controllers/shoppingCartController';
 
 
@@ -17,6 +18,8 @@ import validateToken from '../middleware/verifyToken';
 // Initialize router
 const router = express.Router();
 
+
+router.delete('/clear', validateToken, clearCartHandler);
 
 router.post('/add-to-cart', validateToken, addToCartHandler);
 router.get('', validateToken, getCartProductsHandler);
