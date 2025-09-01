@@ -36,3 +36,15 @@ const Footer = () => {
 }
 
 export default Footer
+
+
+
+
+
+
+
+
+
+
+// Initials - TAD
+// September 2025

@@ -65,3 +65,8 @@ export const getMessagesHandler = async (req: Request, res: Response) => {
         res.status(500).json({ message: "Failed to fetch messages" });
     }
 }
+
+
+
+// Initials - TAD
+// September 2025
