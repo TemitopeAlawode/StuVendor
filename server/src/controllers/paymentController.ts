@@ -107,7 +107,7 @@ export const splitPaymentHandler = async (req: Request, res: Response) => {
         // Build payout records for each vendor
         // Loops through each vendor fetched earlier to calculate and prepare their payout
         const payoutRecords: VendorPayoutAttributes[] = vendors.map((vendor: any) => {
-            //  Calculate the vendor's exact share of amountToSplit
+            //  Calculate the vendor's exact share of amountToSplit.
             // vendorShares[vendor.id] is how much this vendor sold.
             const vendorShare = (vendorShares[vendor.id] / totalVendorShare) * amountToSplit;
             // Ensures the payout amount is a whole number (no decimals).

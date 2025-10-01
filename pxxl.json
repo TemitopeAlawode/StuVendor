@@ -1,0 +1,16 @@
+{
+  "services": {
+    "frontend": {
+      "root": "client",
+      "installCommand": "npm install --legacy-peer-deps",
+      "buildCommand": "npm run build",
+      "outputDirectory": "dist"
+    },
+    "backend": {
+      "root": "server",
+      "installCommand": "npm install --legacy-peer-deps",
+      "buildCommand": "npm run build",
+      "startCommand": "npm start"
+    }
+  }
+}
