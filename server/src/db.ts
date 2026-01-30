@@ -20,6 +20,19 @@ const sequelize = new Sequelize(
   }
 );
 
+(async () => {
+  try {
+    await sequelize.authenticate();
+    console.log(
+      isProduction
+        ? 'Connected to production database'
+        : 'Connected to local database'
+    );
+  } catch (error) {
+    console.error('Unable to connect to the database:', error);
+  }
+})();
+
 export default sequelize;
 
 
