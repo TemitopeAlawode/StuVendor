@@ -22,17 +22,17 @@ const ViewedProduct = db_1.default.define('ViewedProduct', {
     UserId: {
         type: sequelize_1.DataTypes.UUID,
         allowNull: false,
-        // references: { model: 'Users', key: 'id' },
+        references: { model: 'Users', key: 'id' },
     },
     ProductId: {
         type: sequelize_1.DataTypes.UUID,
         allowNull: false,
-        // references: { model: 'Products', key: 'id' },
+        references: { model: 'Products', key: 'id' },
     },
     VendorId: {
         type: sequelize_1.DataTypes.UUID,
         allowNull: false,
-        // references: { model: 'Vendors', key: 'id' },
+        references: { model: 'Vendors', key: 'id' },
     },
     viewTimestamp: {
         type: sequelize_1.DataTypes.DATE,

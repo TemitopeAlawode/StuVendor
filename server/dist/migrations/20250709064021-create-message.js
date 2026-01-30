@@ -1,49 +1,49 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
-const sequelize_1 = require("sequelize");
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable('ShoppingCarts', {
+        await queryInterface.createTable('Messages', {
             sn: {
-                type: sequelize_1.DataTypes.INTEGER,
+                type: Sequelize.INTEGER,
                 autoIncrement: true,
-                unique: true
+                unique: true,
             },
             id: {
                 type: Sequelize.UUID,
                 defaultValue: Sequelize.UUIDV4,
                 primaryKey: true,
             },
-            UserId: {
-                type: sequelize_1.DataTypes.UUID,
+            senderId: {
+                type: Sequelize.UUID,
                 allowNull: false,
-                references: { model: 'Users', key: 'id' },
+                references: { model: "Users", key: "id" },
             },
-            ProductId: {
-                type: sequelize_1.DataTypes.UUID,
+            receiverId: {
+                type: Sequelize.UUID,
                 allowNull: false,
-                references: { model: 'Products', key: 'id' },
+                references: { model: "Users", key: "id" },
             },
-            quantity: {
-                type: Sequelize.INTEGER,
+            content: {
+                type: Sequelize.TEXT,
                 allowNull: false,
             },
-            totalPrice: {
-                type: Sequelize.FLOAT,
+            isRead: {
+                type: Sequelize.BOOLEAN,
                 allowNull: false,
+                defaultValue: false,
             },
             createdAt: {
                 type: Sequelize.DATE,
-                defaultValue: Sequelize.NOW,
+                allowNull: false,
             },
             updatedAt: {
                 type: Sequelize.DATE,
-                defaultValue: Sequelize.NOW,
+                allowNull: false,
             },
         });
     },
     async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable('ShoppingCart');
+        await queryInterface.dropTable('Messages');
     }
 };

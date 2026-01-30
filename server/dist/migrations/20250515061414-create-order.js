@@ -3,11 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable('Payments', {
+        await queryInterface.createTable('Orders', {
             sn: {
                 type: Sequelize.INTEGER,
                 autoIncrement: true,
-                //   unique: true,
+                unique: true,
             },
             id: {
                 type: Sequelize.UUID,
@@ -19,41 +19,52 @@ module.exports = {
                 allowNull: false,
                 references: { model: 'Users', key: 'id' },
             },
-            ShoppingCartId: {
-                type: Sequelize.UUID,
-                allowNull: false,
-                references: { model: 'ShoppingCarts', key: 'id' },
-            },
-            amount: {
-                type: Sequelize.INTEGER,
+            totalAmount: {
+                type: Sequelize.FLOAT,
                 allowNull: false,
             },
-            paymentStatus: {
-                type: Sequelize.ENUM('pending', 'completed', 'failed'),
+            shippingAddress: {
+                type: Sequelize.STRING(200),
                 allowNull: false,
-                defaultValue: 'pending',
             },
-            // Unique ID from the payment gateway (e.g., Paystack).
             transactionId: {
                 type: Sequelize.STRING,
                 allowNull: false,
+                unique: true,
             },
-            paymentTimestamp: {
+            orderStatus: {
+                type: Sequelize.ENUM('pending', 'completed', 'cancelled'),
+                allowNull: false,
+                defaultValue: 'pending',
+            },
+            orderDate: {
                 type: Sequelize.DATE,
                 allowNull: false,
                 defaultValue: Sequelize.NOW,
             },
+            customerName: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            customerEmail: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            customerPhone: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
             createdAt: {
                 type: Sequelize.DATE,
-                defaultValue: Sequelize.NOW,
+                allowNull: false,
             },
             updatedAt: {
                 type: Sequelize.DATE,
-                defaultValue: Sequelize.NOW,
+                allowNull: false,
             },
         });
     },
     async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable('Payments');
+        await queryInterface.dropTable('Orders');
     }
 };

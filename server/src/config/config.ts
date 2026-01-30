@@ -1,8 +1,6 @@
 // Importing dotenv to load env variables
 import dotenv from 'dotenv';
 
-const fs = require('fs');
-const path = require('path');
 
 // Loads .env file contents into process.env
 dotenv.config();
@@ -56,8 +54,8 @@ const config = {
   dialectOptions: {
     ssl: {
       require: true,
-      rejectUnauthorized: true,
-     ca: fs.readFileSync(path.join(process.cwd(), 'certs', 'ca.pem')),
+      rejectUnauthorized: true,  // ← change to true
+      ca: require('fs').readFileSync('../certs/ca.pem').toString(),  // or Buffer if needed
     },
   },
   logging: false,

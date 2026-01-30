@@ -9,12 +9,7 @@ const User_1 = __importDefault(require("./User"));
 const Product_1 = __importDefault(require("./Product"));
 const Vendor_1 = __importDefault(require("./Vendor"));
 const Order_1 = __importDefault(require("./Order"));
-const OrderHistory = db_1.default.define('OrderHistory', {
-    sn: {
-        type: sequelize_1.DataTypes.INTEGER,
-        autoIncrement: true,
-        unique: true,
-    },
+const OrderProducts = db_1.default.define('OrderProducts', {
     id: {
         type: sequelize_1.DataTypes.UUID,
         defaultValue: sequelize_1.DataTypes.UUIDV4,
@@ -23,46 +18,36 @@ const OrderHistory = db_1.default.define('OrderHistory', {
     UserId: {
         type: sequelize_1.DataTypes.UUID,
         allowNull: false,
-        // references: { model: 'Users', key: 'id' },
+        references: { model: 'Users', key: 'id' },
     },
     ProductId: {
         type: sequelize_1.DataTypes.UUID,
         allowNull: false,
-        // references: { model: 'Products', key: 'id' },
+        references: { model: 'Products', key: 'id' },
     },
     VendorId: {
         type: sequelize_1.DataTypes.UUID,
         allowNull: false,
-        // references: { model: 'Vendors', key: 'id' },
+        references: { model: 'Vendors', key: 'id' },
     },
-    orderId: {
+    OrderId: {
         type: sequelize_1.DataTypes.UUID,
         allowNull: false,
-        //   references: { model: 'Orders', key: 'id' },
+        references: { model: 'Orders', key: 'id' },
     },
     quantity: {
         type: sequelize_1.DataTypes.INTEGER,
         allowNull: false,
     },
-    totalPrice: {
+    price: {
         type: sequelize_1.DataTypes.FLOAT,
         allowNull: false,
     },
-    orderStatus: {
-        type: sequelize_1.DataTypes.ENUM('pending', 'completed', 'cancelled'),
-        allowNull: false,
-        defaultValue: 'pending',
-    },
-    orderDate: {
-        type: sequelize_1.DataTypes.DATE,
-        allowNull: false,
-        defaultValue: sequelize_1.DataTypes.NOW,
-    },
 }, {
-    timestamps: true
+    timestamps: true,
 });
-OrderHistory.belongsTo(User_1.default);
-OrderHistory.belongsTo(Product_1.default);
-OrderHistory.belongsTo(Vendor_1.default);
-OrderHistory.belongsTo(Order_1.default);
-exports.default = OrderHistory;
+OrderProducts.belongsTo(Order_1.default);
+OrderProducts.belongsTo(Product_1.default);
+OrderProducts.belongsTo(Vendor_1.default);
+OrderProducts.belongsTo(User_1.default);
+exports.default = OrderProducts;

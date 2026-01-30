@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetPasswordHandler = exports.forgotPasswordHandler = exports.logoutUserHandler = exports.updateUserHandler = exports.completeProfileHandler = exports.getUsersHandler = exports.loginUserHandler = exports.googleAuthFrontendHandler = exports.googleAuthCallbackHandler = exports.verifyEmailHandler = exports.createUserHandler = void 0;
+exports.getUserOrdersHandler = exports.resetPasswordHandler = exports.forgotPasswordHandler = exports.logoutUserHandler = exports.updateUserHandler = exports.completeProfileHandler = exports.getUserByIdHandler = exports.getUsersHandler = exports.loginUserHandler = exports.googleAuthFrontendHandler = exports.googleAuthCallbackHandler = exports.verifyEmailHandler = exports.createUserHandler = void 0;
 // Importing bcrypt for hashing password
 const bcrypt_1 = __importDefault(require("bcrypt"));
 // Importing User model
@@ -20,6 +20,8 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const uuid_1 = require("uuid");
 const PasswordReset_1 = __importDefault(require("../models/PasswordReset"));
 const axios_1 = __importDefault(require("axios"));
+const OrderProducts_1 = __importDefault(require("../models/OrderProducts"));
+const Order_1 = __importDefault(require("../models/Order"));
 // Loads .env file contents into process.env
 dotenv_1.default.config();
 // ================================================
@@ -206,59 +208,6 @@ exports.googleAuthCallbackHandler = googleAuthCallbackHandler;
 // @route   POST /auth/google
 // @access  Public
 // ================================================
-// export const googleAuthFrontendHandler = async (req: Request, res: Response) => {
-//   const { access_token } = req.body;
-//   if (!access_token) {
-//      res.status(400).json({ message: "Access token is required" });
-//      return;
-//   }
-//   try {
-//     // Verify the access token with Google's API
-//     const response = await axios.get(
-//       `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${access_token}`
-//     );
-//     const profile = response.data;
-//     // Find or create user
-//     let user = await User.findOne({ where: { googleId: profile.sub } });
-//     if (!user) {
-//       // Check if user exists with this email
-//       const existingUser = await User.findOne({ where: { email: profile.email } });
-//       if (existingUser) {
-//          res.status(409).json({ message: "Email already exists. Please log in." });
-//          return;
-//       }
-//       // Create new user
-//       user = await User.create({
-//         googleId: profile.sub,
-//         email: profile.email,
-//         name: profile.name,
-//         userType: "customer",
-//         profileCompleted: false
-//       });
-//       // Send welcome email
-//       await sendEmail({
-//         to: user.email,
-//         subject: "Hello, welcome to StuVendor!",
-//         text: `Hello ${user.name},\n\nThank you for registering with StuVendor! We're excited to have you on board. Start exploring vendors for your domestic needs or set up your vendor profile to begin selling.\n\nBest regards,\nThe StuVendor Team`,
-//       });
-//     }
-//     // Generate JWT token
-//     const payload = { id: user.id };
-//     const token = jwt.sign(payload, config.jwtSecret as string, { expiresIn: "7d" });
-//     res.json({
-//       success: true,
-//       token,
-//       user: {
-//         id: user.id,
-//         email: user.email,
-//         name: user.name,
-//       },
-//     });
-//   } catch (error) {
-//     console.error("Google Auth Error:", error);
-//     res.status(500).json({ message: "Internal Server Error" });
-//   }
-// };
 const googleAuthFrontendHandler = async (req, res) => {
     const { access_token, action } = req.body; // Add action parameter to distinguish signup vs login
     if (!access_token) {
@@ -368,6 +317,11 @@ const loginUserHandler = async (req, res) => {
             });
             return; // This stops the function from going further
         }
+        // Check if user is verified
+        if (!user.verified) {
+            res.status(403).json({ message: 'Please verify your email before logging in.' });
+            return;
+        }
         // Generate/Create JWT (token)
         const payload = { id: user.id, email: user.email, userType: user.userType };
         const token = jsonwebtoken_1.default.sign(payload, config.jwtSecret, { expiresIn: '7d' });
@@ -380,7 +334,7 @@ const loginUserHandler = async (req, res) => {
                 email: user.email,
                 userType: user.userType,
                 profileCompleted: user.profileCompleted,
-                // verified: user.verified, 
+                verified: user.verified,
             },
         });
     }
@@ -407,6 +361,27 @@ const getUsersHandler = async (req, res) => {
     }
 };
 exports.getUsersHandler = getUsersHandler;
+// ================================================
+// @desc   View/Get User by ID
+// @route  GET /auth/users/:id
+// @access Private (only logged in users)
+// ================================================
+const getUserByIdHandler = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const user = await User_1.default.findByPk(userId);
+        if (!user) {
+            res.status(404).json({ message: 'User not found' });
+            return; // Stops the function from going any further
+        }
+        res.status(200).json(user);
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching user by ID', error });
+    }
+};
+exports.getUserByIdHandler = getUserByIdHandler;
 // ================================================
 // @desc   Complete Profile(For Google Users)
 // @route  PUT /auth/complete-profile
@@ -460,75 +435,6 @@ const completeProfileHandler = async (req, res) => {
     }
 };
 exports.completeProfileHandler = completeProfileHandler;
-// export const completeProfileHandler = async (req: Request, res: Response) => {
-//   try {
-//     const { userType, studentStatus } = req.body;
-//     // Log the incoming request body for debugging
-//     console.log("Request body:", { userType, studentStatus });
-//     // Ensure all fields are provided
-//     if (!userType || studentStatus === undefined) {
-//       console.log("Validation failed: Missing fields");
-//        res.status(400).json({ message: "Please fill in all fields" });
-//     return;
-//       }
-//     // Validate userType
-//     const validUserTypes = ["customer", "vendor", "admin"];
-//     if (!validUserTypes.includes(userType)) {
-//       console.log("Validation failed: Invalid userType:", userType);
-//        res.status(400).json({ message: "Invalid user type. Must be 'customer', 'vendor', or 'admin'." });
-//     return;
-//       }
-//     // Validate studentStatus
-//     // if (typeof studentStatus !== "boolean") {
-//     //   console.log("Validation failed: Invalid studentStatus:", studentStatus);
-//     //    res.status(400).json({ message: "Student status must be a boolean (true/false)." });
-//     // return;
-//     //   }
-//     // Ensure user is authenticated
-//     console.log("Checking req.user:", req.user);
-//     if (!req.user) {
-//       console.log("Authentication failed: No user in request");
-//        res.status(401).json({ message: "User not authenticated" });
-//     return;
-//       }
-//     const id = (req.user as CustomUser).id;
-//     console.log("Authenticated user ID:", id);
-//     // Fetch user from the database
-//     const user = await User.findByPk(id);
-//     if (!user) {
-//       console.log("User not found for ID:", id);
-//        res.status(404).json({ message: "User not found" });
-//     return;
-//       }
-//     console.log("User found:", user.toJSON());
-//     // Update user details
-//     user.userType = userType;
-//     user.studentStatus = studentStatus;
-//     user.profileCompleted = true;
-//     // Save changes to the database
-//     console.log("Saving user updates...");
-//     await user.save();
-//     console.log("User updated successfully:", user.toJSON());
-//     res.status(200).json({
-//       message: "Profile updated successfully",
-//       user: {
-//         id: user.id,
-//         email: user.email,
-//         name: user.name,
-//         userType: user.userType,
-//         studentStatus: user.studentStatus,
-//         profileCompleted: user.profileCompleted,
-//       },
-//     });
-//   } catch (error: any) {
-//     console.error("Error updating user profile:", {
-//       message: error.message,
-//       stack: error.stack,
-//       details: error,
-//     });
-//     res.status(500).json({ message: "Error updating user profile", error: error.message });
-//   }
-// };
 // ================================================
 // @desc   Update/Edit User Profile
 // @route  PUT  /auth/update-profile
@@ -543,7 +449,11 @@ const updateUserHandler = async (req, res) => {
         // Calling the interface for typechecking
         // const user = req.user as CustomUser;
         // const user = await User.findOne({ where: { id: user.id } });
-        const user = await User_1.default.findByPk(req.user.id);
+        const userInfo = req.user;
+        const userId = userInfo.UserId || userInfo.id;
+        // const user = await User.findByPk((req.user as CustomUser).id);
+        const user = await User_1.default.findByPk(userId);
+        console.log('Id: ', req.user.id);
         // const user = await User.findOne({ where: { id: (req.user as CustomUser).id } });
         if (!user) {
             res.status(404).json({ message: 'User profile not found' });
@@ -678,6 +588,144 @@ const resetPasswordHandler = async (req, res) => {
     }
 };
 exports.resetPasswordHandler = resetPasswordHandler;
+// ================================================
+// @desc   View/Get customers orders
+// @route  GET auth/users/orders
+// @access Private
+// ================================================
+/*
+Step 1: Fetch the user id.
+Step 2: Query OrderProducts where UserId matches the user’s ID to get all products ordered by this user.
+Step 3: Extract unique OrderIds from the OrderProducts results.
+Step 4: Fetch Order records for those OrderIds.
+Step 5: Combine the data to create a response where each order includes its associated products from OrderProducts.
+Output: The response is a list of orders with their details (e.g., totalAmount, orderStatus) and the vendor’s products within each order (e.g., ProductId, quantity, price).
+*/
+const getUserOrdersHandler = async (req, res) => {
+    try {
+        // Fetch user ID
+        const user = req.user;
+        const userId = user.UserId || user.id;
+        console.log('User Id: ', userId);
+        // Fetch OrderProducts entries for this user
+        const orderProducts = await OrderProducts_1.default.findAll({
+            where: { UserId: userId },
+            attributes: ['OrderId', 'ProductId', 'quantity', 'price'], // Relevant fields
+        });
+        if (!orderProducts.length) {
+            res.status(200).json([]);
+            // res.status(200).json({ message: 'No orders found for this vendor.' });
+            return;
+        }
+        // Get unique OrderIds from OrderProducts
+        /*
+        map()  | Pulls all `OrderId`s from the array orderProducts
+        Set()  | Removes duplicates and only keeps unique values
+        [... ] | Turns Set back into array
+        */
+        const orderIds = [...new Set(orderProducts.map((ord) => ord.OrderId))];
+        // Fetch Order details/records for these OrderIds
+        const orders = await Order_1.default.findAll({
+            where: { id: orderIds },
+            order: [["orderDate", "DESC"]], // Sort by orderDate in descending order
+        });
+        // Combine OrderProducts with Orders for response
+        /*
+        Loops through all orders.
+        For each order, finds its matching products.
+        ...order.toJSON() - This spreads all the original order data into a plain object
+        Combines them into a new object with the order info and its products.
+        Useful when returning vendor orders with their product details in one response.
+        */
+        const userOrders = orders.map((order) => ({
+            ...order.toJSON(),
+            Products: orderProducts
+                .filter((op) => op.OrderId === order.id)
+                .map((op) => ({
+                ProductId: op.ProductId,
+                quantity: op.quantity,
+                price: op.price,
+            })),
+        }));
+        console.log('User Orders: ', userOrders);
+        res.status(200).json(userOrders);
+        // res.status(200).json(userId);
+    }
+    catch (error) {
+        console.error("Error fetching user orders:", error);
+        res.status(500).json({ message: "Failed to fetch orders", error: error.message });
+    }
+};
+exports.getUserOrdersHandler = getUserOrdersHandler;
+// export const completeProfileHandler = async (req: Request, res: Response) => {
+//   try {
+//     const { userType, studentStatus } = req.body;
+//     // Log the incoming request body for debugging
+//     console.log("Request body:", { userType, studentStatus });
+//     // Ensure all fields are provided
+//     if (!userType || studentStatus === undefined) {
+//       console.log("Validation failed: Missing fields");
+//        res.status(400).json({ message: "Please fill in all fields" });
+//     return;
+//       }
+//     // Validate userType
+//     const validUserTypes = ["customer", "vendor", "admin"];
+//     if (!validUserTypes.includes(userType)) {
+//       console.log("Validation failed: Invalid userType:", userType);
+//        res.status(400).json({ message: "Invalid user type. Must be 'customer', 'vendor', or 'admin'." });
+//     return;
+//       }
+//     // Validate studentStatus
+//     // if (typeof studentStatus !== "boolean") {
+//     //   console.log("Validation failed: Invalid studentStatus:", studentStatus);
+//     //    res.status(400).json({ message: "Student status must be a boolean (true/false)." });
+//     // return;
+//     //   }
+//     // Ensure user is authenticated
+//     console.log("Checking req.user:", req.user);
+//     if (!req.user) {
+//       console.log("Authentication failed: No user in request");
+//        res.status(401).json({ message: "User not authenticated" });
+//     return;
+//       }
+//     const id = (req.user as CustomUser).id;
+//     console.log("Authenticated user ID:", id);
+//     // Fetch user from the database
+//     const user = await User.findByPk(id);
+//     if (!user) {
+//       console.log("User not found for ID:", id);
+//        res.status(404).json({ message: "User not found" });
+//     return;
+//       }
+//     console.log("User found:", user.toJSON());
+//     // Update user details
+//     user.userType = userType;
+//     user.studentStatus = studentStatus;
+//     user.profileCompleted = true;
+//     // Save changes to the database
+//     console.log("Saving user updates...");
+//     await user.save();
+//     console.log("User updated successfully:", user.toJSON());
+//     res.status(200).json({
+//       message: "Profile updated successfully",
+//       user: {
+//         id: user.id,
+//         email: user.email,
+//         name: user.name,
+//         userType: user.userType,
+//         studentStatus: user.studentStatus,
+//         profileCompleted: user.profileCompleted,
+//       },
+//     });
+//   } catch (error: any) {
+//     console.error("Error updating user profile:", {
+//       message: error.message,
+//       stack: error.stack,
+//       details: error,
+//     });
+//     res.status(500).json({ message: "Error updating user profile", error: error.message });
+//   }
+// };
 // ================================================
 // @desc   Create/Register a new User
 // @route  POST  /auth/signup

@@ -1,59 +1,57 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
+const sequelize_1 = require("sequelize");
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable('Payments', {
+        await queryInterface.createTable('VendorPayouts', {
             sn: {
                 type: Sequelize.INTEGER,
                 autoIncrement: true,
-                //   unique: true,
+                unique: true,
             },
             id: {
                 type: Sequelize.UUID,
                 defaultValue: Sequelize.UUIDV4,
                 primaryKey: true,
             },
-            UserId: {
-                type: Sequelize.UUID,
+            VendorId: {
+                type: sequelize_1.DataTypes.UUID,
                 allowNull: false,
-                references: { model: 'Users', key: 'id' },
+                references: { model: 'Vendors', key: 'id' },
             },
-            ShoppingCartId: {
-                type: Sequelize.UUID,
-                allowNull: false,
-                references: { model: 'ShoppingCarts', key: 'id' },
+            transactionId: {
+                type: sequelize_1.DataTypes.STRING,
+                allowNull: true,
             },
             amount: {
-                type: Sequelize.INTEGER,
+                type: sequelize_1.DataTypes.FLOAT,
                 allowNull: false,
             },
-            paymentStatus: {
-                type: Sequelize.ENUM('pending', 'completed', 'failed'),
+            status: {
+                type: sequelize_1.DataTypes.ENUM('pending', 'completed', 'failed'),
                 allowNull: false,
                 defaultValue: 'pending',
             },
-            // Unique ID from the payment gateway (e.g., Paystack).
-            transactionId: {
-                type: Sequelize.STRING,
-                allowNull: false,
+            transferReference: {
+                type: sequelize_1.DataTypes.STRING,
+                allowNull: true,
             },
-            paymentTimestamp: {
-                type: Sequelize.DATE,
+            type: {
+                type: sequelize_1.DataTypes.ENUM('order_split', 'withdrawal'),
                 allowNull: false,
-                defaultValue: Sequelize.NOW,
             },
             createdAt: {
                 type: Sequelize.DATE,
-                defaultValue: Sequelize.NOW,
+                allowNull: false,
             },
             updatedAt: {
                 type: Sequelize.DATE,
-                defaultValue: Sequelize.NOW,
+                allowNull: false,
             },
         });
     },
     async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable('Payments');
+        await queryInterface.dropTable('VendorPayouts');
     }
 };

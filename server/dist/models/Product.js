@@ -26,9 +26,26 @@ const Product = db_1.default.define('Product', {
         type: sequelize_1.DataTypes.TEXT,
         allowNull: false,
     },
+    // price: {
+    //   type: DataTypes.FLOAT,
+    //   allowNull: false,
+    // },
     price: {
-        type: sequelize_1.DataTypes.FLOAT,
+        type: sequelize_1.DataTypes.DECIMAL(10, 2), // 10 digits total, 2 after decimal (e.g., up to 99,999,999.99)
         allowNull: false,
+        validate: {
+            isDecimal: {
+                msg: "Price must be a valid decimal number.",
+            },
+            min: {
+                args: [0],
+                msg: "Price cannot be negative.",
+            },
+            max: {
+                args: [99999999.99], // Matches DECIMAL(10, 2) max value
+                msg: "Price is too large (max 99,999,999.99).",
+            },
+        },
     },
     VendorId: {
         type: sequelize_1.DataTypes.UUID,

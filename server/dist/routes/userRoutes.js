@@ -17,12 +17,16 @@ const verifyToken_1 = __importDefault(require("../middleware/verifyToken"));
 const checkUserRole_1 = __importDefault(require("../middleware/checkUserRole"));
 // Initialize router
 const router = express_1.default.Router();
+// Get orders
+router.get('/users/orders', verifyToken_1.default, userController_1.getUserOrdersHandler);
 // Manual Signup and Signin
 router.post('/signup', userController_1.createUserHandler);
 router.post('/signin', userController_1.loginUserHandler);
 // Admin: Get all Users
 // router.get('/users', validateToken, checkIfAdmin, getUsersHandler);
 router.get('/users', verifyToken_1.default, (0, checkUserRole_1.default)('admin'), userController_1.getUsersHandler);
+// Get Users by id
+router.get('/users/:id', verifyToken_1.default, userController_1.getUserByIdHandler);
 // ============== GOOGLE OAUTH ============== //
 // Step 1: Redirect to Google
 router.get('/google', passport_1.default.authenticate("google", { scope: ["profile", "email"] }));

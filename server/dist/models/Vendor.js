@@ -28,17 +28,36 @@ const Vendor = db_1.default.define('Vendor', {
     phoneNumber: {
         type: sequelize_1.DataTypes.STRING,
         allowNull: true,
-        validate: {
-            is: /^\+?[1-9]\d{1,14}$/, // Basic phone number validation (E.164 format)
-        },
+        // validate: {
+        //   is: /^\+?[1-9]\d{1,14}$/, // Basic phone number validation (E.164 format)
+        // },
     },
     description: {
         type: sequelize_1.DataTypes.TEXT,
         allowNull: true,
     },
-    bankDetails: {
-        type: sequelize_1.DataTypes.JSON, // E.g., { accountNumber: "1234567890", bankCode: "044" }
-        allowNull: true,
+    // bankDetails: {
+    //   type: DataTypes.JSON, // E.g., { accountNumber: "1234567890", bankCode: "044" }
+    //   allowNull: true,
+    // },
+    bankCode: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: false,
+    },
+    bankAccountNumber: {
+        type: sequelize_1.DataTypes.STRING(10),
+        allowNull: false,
+        validate: {
+            len: [10, 10],
+            isNumeric: { msg: "Account number must contain only digits." },
+        },
+    },
+    bankAccountName: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: false,
+        validate: {
+            notEmpty: { msg: "Account name is required." },
+        },
     },
     UserId: {
         type: sequelize_1.DataTypes.UUID,

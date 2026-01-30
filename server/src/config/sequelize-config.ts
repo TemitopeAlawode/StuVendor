@@ -2,10 +2,6 @@
 // This file is specifically for Sequelize CLI
 
 import dotenv from 'dotenv';
-
-const fs = require('fs');
-const path = require('path');
-
 dotenv.config();
 
 module.exports = {
@@ -52,8 +48,8 @@ module.exports = {
   dialectOptions: {
     ssl: {
       require: true,
-      rejectUnauthorized: true,
-     ca: fs.readFileSync(path.join(process.cwd(), 'certs', 'ca.pem')),
+      rejectUnauthorized: true,  // ← change to true
+      ca: require('fs').readFileSync('../certs/ca.pem').toString(),  // or Buffer if needed
     },
   },
   logging: false,

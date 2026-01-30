@@ -29,5 +29,5 @@ router.delete('/:id', verifyToken_1.default, (0, checkUserRole_1.default)('vendo
 router.get('/vendor/:id', productController_1.getProductsByVendorIdHandler);
 // router.get('/vendor', validateToken, getProductsByVendorIdHandler);
 // Index Products into Algolia
-router.get('/index-all-products', verifyToken_1.default, productController_1.indexAllProductsHandler); // Restrict to admins
+router.post('/index-all-products', verifyToken_1.default, (0, checkUserRole_1.default)('admin'), productController_1.indexAllProductsHandler); // Restrict to admins
 exports.default = router;

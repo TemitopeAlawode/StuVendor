@@ -6,19 +6,37 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.indexAllProductsHandler = exports.getProductsByVendorIdHandler = exports.deleteProductHandler = exports.updateProductHandler = exports.getProductByIdHandler = exports.getProductsHandler = exports.createProductHandler = void 0;
 const Product_1 = __importDefault(require("../models/Product"));
 const Category_1 = __importDefault(require("../models/Category"));
-// import { Op } from 'sequelize';
+const sequelize_1 = require("sequelize");
 // import  {algoliasearch} from "algoliasearch";
 // const algoliasearch = require('algoliasearch');
 const { algoliasearch } = require("algoliasearch");
 // Initialize Algolia client
 // const algoliaClient = (algoliasearch as any)(
 const algoliaClient = algoliasearch(process.env.ALGOLIA_APP_ID, process.env.ALGOLIA_ADMIN_API_KEY);
-console.log("algoliaClient:", algoliaClient);
-const algoliaIndex = algoliaClient.initIndex("products");
+// console.log("algoliaClient:", algoliaClient);
+// const algoliaIndex = algoliaClient.initIndex("products");
 // const algoliaIndex =  algoliaClient.searchSingleIndex({ indexName: 'products' });
-// algoliaIndex.search('something', function searchDone(err: any, content: any) {
-//   console.log(err, content);
-// });
+// Create index if it doesn't exist
+async function ensureIndexExists() {
+    try {
+        await algoliaClient.getSettings({ indexName: "products" });
+        console.log("Index 'products' exists");
+    }
+    catch (error) {
+        if (error.status === 404) {
+            console.log("Index 'products' does not exist. Creating it...");
+            await algoliaClient.setSettings({ indexName: "products", settings: {} });
+            console.log("Index 'products' created successfully");
+        }
+        else {
+            throw error;
+        }
+    }
+}
+// Call ensureIndexExists when the module loads
+ensureIndexExists().catch((error) => {
+    console.error("Failed to ensure index exists:", error);
+});
 // ================================================
 // @desc Create Product
 // @route POST /products/add-product
@@ -41,14 +59,32 @@ const createProductHandler = async (req, res) => {
             });
             return;
         }
-        // Convert price and stock to numbers (handles string inputs like "30000" or "9")
-        const parsedPrice = Number(price);
-        const parsedStock = Number(stock);
-        // Validate data types and ranges
-        if (isNaN(parsedPrice) || parsedPrice < 0) {
-            res.status(400).json({ message: "Price must be a positive number" });
+        // Validate price
+        if (price == null) {
+            res.status(400).json({ message: "Price is required." });
             return;
         }
+        const priceNum = parseFloat(price);
+        if (isNaN(priceNum)) {
+            res.status(400).json({ message: "Price must be a valid number." });
+            return;
+        }
+        if (priceNum < 0) {
+            res.status(400).json({ message: "Price cannot be negative." });
+        }
+        if (priceNum > 99999999.99) {
+            res.status(400).json({ message: "Price is too large (max 99,999,999.99)." });
+            return;
+        }
+        // Check decimal places
+        const decimalPlaces = (price.toString().split('.')[1] || '').length;
+        if (decimalPlaces > 2) {
+            res.status(400).json({ message: "Price cannot have more than 2 decimal places." });
+            return;
+        }
+        // ----- end of price validation
+        // Convert stock to numbers (handles string inputs like "30000" or "9")
+        const parsedStock = Number(stock);
         if (isNaN(parsedStock) ||
             !Number.isInteger(parsedStock) ||
             parsedStock < 0) {
@@ -81,17 +117,35 @@ const createProductHandler = async (req, res) => {
             stock,
             productImage,
         });
-        // Indexthe new product into Algolia immediately after creation
-        await algoliaIndex.saveObject({
-            objectID: product.id, // Use product ID as objectID
-            name: product.name,
-            description: product.description,
-            price: product.price,
-            category: (await Category_1.default.findByPk(product.CategoryId))?.name || "", // Fetch category name
-            stock: product.stock,
-            productImage: product.productImage,
-            VendorId: product.VendorId,
-        });
+        // Index the new product into Algolia immediately after creation
+        // await algoliaIndex.saveObject({
+        //   objectID: product.id, // Use product ID as objectID
+        //   name: product.name,
+        //   description: product.description,
+        //   price: product.price,
+        //   category: (await Category.findByPk(product.CategoryId))?.name || "", // Fetch category name
+        //   stock: product.stock,
+        //   productImage: product.productImage,
+        //   VendorId: product.VendorId,
+        // });
+        try {
+            await algoliaClient.saveObjects({
+                indexName: "products",
+                objects: [{
+                        objectID: product.id,
+                        name: product.name,
+                        description: product.description,
+                        price: product.price,
+                        category: (await Category_1.default.findByPk(product.CategoryId))?.name || "",
+                        stock: product.stock,
+                        productImage: product.productImage,
+                        VendorId: product.VendorId,
+                    }],
+            });
+        }
+        catch (algoliaError) {
+            console.error("Algolia indexing error:", algoliaError.message);
+        }
         console.log("Product info:", product);
         res.status(201).json({ message: "Product created successfully", product });
     }
@@ -108,8 +162,10 @@ exports.createProductHandler = createProductHandler;
 // ================================================
 const getProductsHandler = async (req, res) => {
     try {
-        const { categoryId } = req.query;
+        // Get query parameters from the request (?...)
+        const { categoryId, search } = req.query;
         // whereClause object, which will be empty (fetch all products) if no categoryId is provided.
+        // Object to store filtering conditions
         const whereClause = {};
         // If categoryId is provided, filter by it
         if (categoryId) {
@@ -124,6 +180,17 @@ const getProductsHandler = async (req, res) => {
                 return;
             }
             whereClause.CategoryId = categoryId;
+        }
+        // Handle search filter if provided
+        if (search) {
+            if (typeof search !== "string") {
+                res.status(400).json({ message: "Search Query must be a string" });
+                return;
+            }
+            // Search condition to filter by product name (case insensitive)
+            whereClause.name = {
+                [sequelize_1.Op.iLike]: `%${search}%` // Matches product name containing the search query term
+            };
         }
         // Fetch products with the applied filter (or all products if no filter)
         const products = await Product_1.default.findAll({ where: whereClause });
@@ -186,22 +253,28 @@ const updateProductHandler = async (req, res) => {
             });
             return;
         }
-        // Validate and update
-        // if (typeof price === 'number' && price < 0) {
-        //     res.status(400).json({ message: 'Price must be a positive number' });
-        //     return;
-        // }
-        // if (typeof stock === 'number' && stock < 0) {
-        //     res.status(400).json({ message: 'Stock must be a non-negative number' });
-        //     return;
-        // }
-        // Validate inputs if provided
-        if (price !== undefined) {
-            const parsedPrice = Number(price);
-            if (isNaN(parsedPrice) || parsedPrice < 0) {
-                res.status(400).json({ message: "Price must be a positive number" });
-                return;
-            }
+        // Validate price
+        if (price == null) {
+            res.status(400).json({ message: "Price is required." });
+            return;
+        }
+        const priceNum = parseFloat(price);
+        if (isNaN(priceNum)) {
+            res.status(400).json({ message: "Price must be a valid number." });
+            return;
+        }
+        if (priceNum < 0) {
+            res.status(400).json({ message: "Price cannot be negative." });
+        }
+        if (priceNum > 99999999.99) {
+            res.status(400).json({ message: "Price is too large (max ₦99,999,999.99)." });
+            return;
+        }
+        // Check decimal places
+        const decimalPlaces = (price.toString().split('.')[1] || '').length;
+        if (decimalPlaces > 2) {
+            res.status(400).json({ message: "Price cannot have more than 2 decimal places." });
+            return;
         }
         if (stock !== undefined) {
             const parsedStock = Number(stock);
@@ -218,24 +291,43 @@ const updateProductHandler = async (req, res) => {
         await product.update({
             name: name || product.name,
             description: description || product.description,
-            price: price !== undefined ? Number(price) : product.price,
+            price: price !== undefined ? priceNum : product.price,
             CategoryId: CategoryId || product.CategoryId,
             stock: stock !== undefined ? Number(stock) : product.stock,
             productImage: productImage || product.productImage,
         });
         // Update Algolia index
         // Added algoliaIndex.saveObject after the update to reflect changes in the index
-        const category = await Category_1.default.findByPk(product.CategoryId);
-        await algoliaIndex.saveObject({
-            objectID: product.id,
-            name: product.name,
-            description: product.description,
-            price: product.price,
-            category: category?.name || '',
-            stock: product.stock,
-            productImage: product.productImage,
-            VendorId: product.VendorId,
-        });
+        // const category = await Category.findByPk(product.CategoryId);
+        // await algoliaIndex.saveObject({
+        //   objectID: product.id,
+        //   name: product.name,
+        //   description: product.description,
+        //   price: product.price,
+        //   category: category?.name || '',
+        //   stock: product.stock,
+        //   productImage: product.productImage,
+        //   VendorId: product.VendorId,
+        // });
+        try {
+            const category = await Category_1.default.findByPk(product.CategoryId);
+            await algoliaClient.saveObjects({
+                indexName: "products",
+                objects: [{
+                        objectID: product.id,
+                        name: product.name,
+                        description: product.description,
+                        price: product.price,
+                        category: category?.name || "",
+                        stock: product.stock,
+                        productImage: product.productImage,
+                        VendorId: product.VendorId,
+                    }],
+            });
+        }
+        catch (algoliaError) {
+            console.error("Algolia indexing error:", algoliaError.message);
+        }
         res.status(200).json({ message: "Product updated successfully", product });
     }
     catch (error) {
@@ -270,7 +362,16 @@ const deleteProductHandler = async (req, res) => {
         // Delete Product
         await product.destroy();
         // Added algoliaIndex.deleteObject to remove the product from the index
-        await algoliaIndex.deleteObject(product.id); // Remove from Algolia
+        // await algoliaIndex.deleteObject(product.id); // Remove from Algolia
+        try {
+            await algoliaClient.deleteObjects({
+                indexName: "products",
+                objectIDs: [product.id],
+            });
+        }
+        catch (algoliaError) {
+            console.error("Algolia deletion error:", algoliaError.message);
+        }
         res.status(200).json({ message: "Product deleted successfully" });
     }
     catch (error) {
@@ -302,29 +403,35 @@ const getProductsByVendorIdHandler = async (req, res) => {
 };
 exports.getProductsByVendorIdHandler = getProductsByVendorIdHandler;
 // ================================================
+// Index All Products Handler
 // @desc Handler to index all existing products into Algolia
+// @route POST /products/index-all-products
+// @access Private (admins only)
 // ================================================
 const indexAllProductsHandler = async (req, res) => {
     try {
         const products = await Product_1.default.findAll({
-            include: [{ model: Category_1.default, attributes: ['name'] }],
+            include: [{ model: Category_1.default, attributes: ["name"] }],
         });
         const objects = products.map((product) => ({
             objectID: product.id,
             name: product.name,
             description: product.description,
             price: product.price,
-            category: product.Category.name,
+            category: product.Category?.name || "",
             stock: product.stock,
             productImage: product.productImage,
             VendorId: product.VendorId,
         }));
-        await algoliaIndex.saveObjects(objects);
-        res.status(200).json({ message: 'All products indexed successfully' });
+        await algoliaClient.saveObjects({
+            indexName: "products",
+            objects,
+        });
+        res.status(200).json({ message: "All products indexed successfully" });
     }
     catch (error) {
-        console.error('Indexing error:', error);
-        res.status(500).json({ message: 'Error indexing products' });
+        console.error("Indexing error:", error.message);
+        res.status(500).json({ message: "Error indexing products", error: error.message });
     }
 };
 exports.indexAllProductsHandler = indexAllProductsHandler;
