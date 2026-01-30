@@ -59,14 +59,26 @@ module.exports = {
 //   logging: false,
 // },
 
+// production: {
+//   use_env_variable: 'DATABASE_URL',
+//   dialect: 'postgres',
+//   dialectOptions: {
+//     ssl: {
+//       require: true,
+//       rejectUnauthorized: true,
+//       ca: fs.readFileSync(path.join(process.cwd(), 'ca.pem')),
+//     },
+//   },
+//   logging: false,
+// },
+
 production: {
   use_env_variable: 'DATABASE_URL',
   dialect: 'postgres',
   dialectOptions: {
     ssl: {
       require: true,
-      rejectUnauthorized: true,
-      ca: fs.readFileSync(path.join(process.cwd(), 'ca.pem')),
+      rejectUnauthorized: false,   // Use this again
     },
   },
   logging: false,
