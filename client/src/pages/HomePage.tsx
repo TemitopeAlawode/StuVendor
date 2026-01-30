@@ -69,7 +69,7 @@ const HomePage = () => {
             Connect with trusted vendors for your domestic needs. Shop for quality products or start selling today!!
           </p>
 
-          <div className="space-x-4">
+          <div className="space-x-4 flex flex-col md:flex-row justify-center">
             <Link
               to="/products"
               className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 "
@@ -78,7 +78,7 @@ const HomePage = () => {
             </Link>
             <Link
               to="/auth/signup"
-              className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg hover:bg-white hover:text-blue-950 "
+              className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg hover:bg-white hover:text-blue-950 mt-4 md:mt-0"
             >
               Become a Vendor
             </Link>
